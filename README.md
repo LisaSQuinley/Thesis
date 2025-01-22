@@ -17,3 +17,15 @@ Markup : -*Vital climate change graphics.* Arendal, Norway: UNEP, 2005.
 Markup : -*Vital climate graphics Africa: the impacts of climate change.* Arendal, Norway: UNEP/GRID-Arendal, 2002.
 
 Markup : -*Women at the frontline of climate change: gender risks and hopes: a rapid response assessment.* Arendal, Norway: United Nations Environment Programme, 2011.
+
+ Markup : * Bullet list
+              * Nested bullet
+                  * Sub-nested bullet etc
+          * Bullet list item 2
+
+-OR-
+
+ Markup : - Bullet list
+              - Nested bullet
+                  - Sub-nested bullet etc
+          - Bullet list item 2 
