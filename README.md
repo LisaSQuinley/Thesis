@@ -1,5 +1,10 @@
 # Lisa Sakai Quinley's Thesis Project 
 **Created during MS2 of Spring 2025.**
+
+Brainstorm Session (25.01.2025):
+![Brainstorm-Session_23-01-2025](https://github.com/user-attachments/assets/da1ed838-2c1a-46c0-ab46-d1d50c5d5cd3)
+
+
 ###### Literature Review:
 - Bjørke, Sven Åke; Seki, Megumi; GRID-Arendal; UNEP. *Vital climate graphics: the impacts of climate change.* UNEP/GRID-Arendal, 2001.
 - Perera, Frederica. *Children’s Health and the Peril of Climate Change.* New York, NY: Oxford University Press, 2022.
