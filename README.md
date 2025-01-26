@@ -1,7 +1,7 @@
 # Lisa Sakai Quinley's Thesis Project 
 **Created during MS2 of Spring 2025.**
 
-Brainstorm Session (25.01.2025):
+###### Brainstorm Session (25.01.2025):
 ![Brainstorm-Session_23-01-2025](https://github.com/user-attachments/assets/da1ed838-2c1a-46c0-ab46-d1d50c5d5cd3)
 
 
