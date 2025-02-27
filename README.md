@@ -1,6 +1,31 @@
 # Lisa Sakai Quinley's Thesis Project 
 **Created during MS2 of Spring 2025.**
 
+#### Sketches
+##### Sketch 1
+![Sketch-1](https://github.com/user-attachments/assets/8c2217f8-4bab-42cc-a3e3-6ff9d18bbcb1)
+Title to come - (World Overview).
+What patterns are there globally regarding the occurrence of disasters? What trends can we see as we review these incidents over time?
+EM-DAT dataset "on the occurrence and impacts of over 26,000 mass disasters worldwide from 1900 to the present day."
+There are about 10300 data points in this dataset and the "database is compiled from various sources, including UN agencies, non-governmental organizations, reinsurance companies, research institutes, and press agencies." (https://www.emdat.be/)
+World map with color coding and possibly iconography.
+
+##### Sketch 2
+![Sketch-2](https://github.com/user-attachments/assets/a62eec2c-4020-4de0-bfcb-b31b9e5042cc)
+Title to come - (African Continent)
+What patterns are there amongst the countries in the African continent with regards to incomes and their levels of vulnerability and lack of coping capacity? 
+INFORM Risk Index dataset. "INFORM is a multi-stakeholder forum for developing shared, quantitative analysis relevant to humanitarian crises and disasters. INFORM includes organisations from across the multilateral system, including the humanitarian and development sector, donors, and technical partners. The Joint Research Center of European Commission is the scientific lead for INFORM." (https://drmkc.jrc.ec.europa.eu/inform-index)
+There are scores for 190 countries in a number of categories, the ones I will be visualizing will be Vulnerability, Lack of Coping Capacity, and the Inform Risk Index.
+Continent map with color coding, possibly a bar chart.
+
+##### Sketch 3
+![Sketch-3](https://github.com/user-attachments/assets/b206ea43-74ae-44fb-8ee7-c6cd0db085dc)
+Title to come - (Morocco)
+How does Morocco differ from other countries with regards to disasters?
+Both the EM-DAT dataset and the INFORM Risk Index dataset.
+The focus will be on all disaster occurrences over time and all categories regarding the Inform Risk Index for Morocco.
+Country map, timeline, other possibilities not yet decided or sketched.
+
 
 #### 1. Introduction (revised)
 ##### 1.1. My Goal
