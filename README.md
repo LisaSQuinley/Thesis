@@ -1,6 +1,12 @@
 # Lisa Sakai Quinley's Thesis Project 
 **Created during MS2 of Spring 2025.**
 
+#### Mocks (I think I want to use all of them).
+![Mock 1](https://github.com/user-attachments/assets/4286b5c5-6419-400d-9f90-d9c46c0082f9)
+![Mock 2](https://github.com/user-attachments/assets/06150f01-dee8-425e-a970-eda1572ce95f)
+![Mock 3](https://github.com/user-attachments/assets/4652693c-71fa-4742-b20a-9db2e99d6de0)
+
+
 #### Sketches
 ##### Sketch 1
 ![Sketch-1](https://github.com/user-attachments/assets/8c2217f8-4bab-42cc-a3e3-6ff9d18bbcb1)
