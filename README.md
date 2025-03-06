@@ -1,6 +1,10 @@
 # Lisa Sakai Quinley's Thesis Project 
 **Created during MS2 of Spring 2025.**
 
+#### Initial Code (I think I will start with a Morocco-focus and then pull back to do a world view).
+<img width="2056" alt="Screenshot 2025-03-06 at 12 05 06" src="https://github.com/user-attachments/assets/6dc340cb-6833-4953-b3e5-379aea8adea7" />
+
+
 #### Mocks (I think I want to use all of them).
 ![Mock 1](https://github.com/user-attachments/assets/4286b5c5-6419-400d-9f90-d9c46c0082f9)
 ![Mock 2](https://github.com/user-attachments/assets/06150f01-dee8-425e-a970-eda1572ce95f)
