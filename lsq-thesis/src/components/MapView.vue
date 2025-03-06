@@ -1,11 +1,11 @@
 <template>
-    <div style="height:600px; width:600px">
-        <l-map ref="map" v-model:zoom="zoom" :center="[28.7917, -7.9926]">
-      <!-- <l-map ref="map" v-model:zoom="zoom" :center="[47.41322, -1.219482]"> -->
+    <div class="map-container">
+      <l-map ref="map" v-model:zoom="zoom" :center="[28.7917, -7.9926]">
         <l-tile-layer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           layer-type="base"
-          name="OpenStreetMap"
+          attribution="OpenStreetMap | contributors: CartoDB"
+          subdomains="abcd"
         ></l-tile-layer>
       </l-map>
     </div>
@@ -28,4 +28,25 @@
   };
   </script>
   
-  <style></style>
+  <style>
+  /* Full screen height and width */
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  
+  /* Flexbox container to center the map */
+  .map-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70vh;  /* Full viewport height */
+    width: 100%;    /* Full width of the viewport */
+  }
+  
+  l-map {
+    height: 600px;
+    width: 600px;
+  }
+  </style>
+  
