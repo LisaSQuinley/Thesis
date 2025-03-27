@@ -4,16 +4,28 @@
     <div class="charts-wrapper">
       <MoroccoMapView />
     </div>
+    <div class="charts-wrapper" >
+      <RainfallPrecipitation />
+      <MeanTemperature />
+    </div>
     <div class="charts-wrapper">
       <WorldMapViewTimeline />
       <INFORMRiskIndex />
     </div>
+  </div>
+  <div class="footer">
+    <p>
+      To check out other projects Lisa has created, visit
+      <a href="https://lsq.design" target="_blank" rel="noopener">lsq.design</a>.
+    </p>
   </div>
 </template>
 
 <script>
 import HelloMorocco from './components/HelloMorocco.vue'
 import MoroccoMapView from './components/MoroccoMapView.vue'
+import RainfallPrecipitation from './components/RainfallPrecipitation.vue'
+import MeanTemperature from './components/MeanTemperature.vue'
 import WorldMapViewTimeline from './components/WorldMapViewTimeline.vue'
 import INFORMRiskIndex from './components/INFORMRiskIndex.vue'
 
@@ -22,6 +34,8 @@ export default {
   components: {
     HelloMorocco, 
     MoroccoMapView,
+    RainfallPrecipitation,
+    MeanTemperature,
     WorldMapViewTimeline,
     INFORMRiskIndex,
   }
@@ -47,5 +61,12 @@ export default {
   justify-content: center;
   align-items: center;
   margin: 20px auto;
+}
+
+.footer {
+  width: 100%;
+  margin: 10px;
+  text-align: center;
+  padding: 10px 0;
 }
 </style>
