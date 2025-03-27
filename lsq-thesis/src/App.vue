@@ -1,7 +1,7 @@
 <template>
   <div>
-    <HelloMorocco msg="A Hot Topic for Morocco"/>
-    <div>
+    <HelloMorocco msg="Droughts! Floods! Heat Waves! Oh My!"/>
+    <div class="charts-wrapper">
       <MoroccoMapView />
     </div>
     <div class="charts-wrapper">
@@ -43,6 +43,7 @@ export default {
   justify-content: space-between; /* Optional: Space items evenly */
   gap: 20px; /* Optional: Add space between components */
   margin-top: 20px; /* Optional: Add some space above */
-  width: 90%;
+  width: 100%;
+  justify-content: center;
 }
 </style>
