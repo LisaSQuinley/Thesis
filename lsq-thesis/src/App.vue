@@ -1,22 +1,29 @@
 <template>
   <div>
     <HelloMorocco msg="A Hot Topic for Morocco"/>
-    <MapView />  <!-- Updated name here -->
-    <d3BarChart />
+    <div>
+      <MoroccoMapView />
+    </div>
+    <div class="charts-wrapper">
+      <WorldMapViewTimeline />
+      <INFORMRiskIndex />
+    </div>
   </div>
 </template>
 
 <script>
 import HelloMorocco from './components/HelloMorocco.vue'
-import MapView from './components/MapView.vue'  // Updated import here
-import d3BarChart from './components/d3BarChart.vue'
+import MoroccoMapView from './components/MoroccoMapView.vue'
+import WorldMapViewTimeline from './components/WorldMapViewTimeline.vue'
+import INFORMRiskIndex from './components/INFORMRiskIndex.vue'
 
 export default {
   name: 'App',
   components: {
     HelloMorocco, 
-    MapView,
-    d3BarChart
+    MoroccoMapView,
+    WorldMapViewTimeline,
+    INFORMRiskIndex,
   }
 }
 </script>
@@ -29,5 +36,13 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 30px;
+}
+
+.charts-wrapper {
+  display: flex; /* Use flexbox to align items horizontally */
+  justify-content: space-between; /* Optional: Space items evenly */
+  gap: 20px; /* Optional: Add space between components */
+  margin-top: 20px; /* Optional: Add some space above */
+  width: 90%;
 }
 </style>
