@@ -6,12 +6,6 @@ import * as d3 from 'd3';
 const chartData = ref([]);
 const sortOption = ref('descending'); // Default sort: Decreasing risk index
 
-const title = d3.select("INFORM-chart")
-    title.append("text")
-    .attr("text-anchor", "middle")
-    .attr("font-weight", "bold")
-    .text("INFORM Risk Index by Country");
-
 // Function to sort data based on selected option
 const sortData = (data, option) => {
   if (option === 'alphabetical') {
@@ -43,7 +37,7 @@ const normalizeColumnNames = (data) => {
 };
 
 const createChart = (data) => {
-  // Clear existing chart
+
   d3.select("#INFORM-chart").select("svg").remove();
   
   const margin = { top: 40, right: 30, bottom: 40, left: 150 };
@@ -133,6 +127,7 @@ watch(sortedData, (newData) => {
 
 <template>
   <div class="INFORM-risk-index">
+    <h3 class="chart-title">INFORM Risk Index 2025</h3>
     <!-- Filter controls -->
     <div class="filter-controls">
       <label>
@@ -153,15 +148,16 @@ watch(sortedData, (newData) => {
 <style scoped>
 .INFORM-risk-index {
   margin: 0;
+  padding: 0;
   width: 50%;
-  height: 650px;
+  height: 700px;
   overflow-y: auto;
 }
 
 #INFORM-chart {
   margin: 0;
   width: 100%;
-  height: 650px;
+  height: 700px;
   overflow-y: auto;
 }
 .bar {

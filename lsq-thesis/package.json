@@ -9,6 +9,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
+  "homepage": "https://LisaSQuinley.github.io/Thesis/",
   "dependencies": {
     "core-js": "^3.8.3",
     "d3": "^7.9.0",
