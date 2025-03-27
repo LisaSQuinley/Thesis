@@ -43,7 +43,9 @@ export default {
   justify-content: space-between; /* Optional: Space items evenly */
   gap: 20px; /* Optional: Add space between components */
   margin-top: 20px; /* Optional: Add some space above */
-  width: 100%;
+  width: 90%;
   justify-content: center;
+  align-items: center;
+  margin: 20px auto;
 }
 </style>

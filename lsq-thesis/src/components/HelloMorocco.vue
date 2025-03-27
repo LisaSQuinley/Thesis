@@ -23,7 +23,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 html, body {
-  width: 90%;
+  width: 100%;
   margin: 0;
 }
 h3 {

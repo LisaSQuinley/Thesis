@@ -134,9 +134,8 @@ watch(sortedData, (newData) => {
 </script>
 
 <template>
-  <div>
+  <div class="INFORM-risk-index">
     <!-- Filter controls -->
-     <div id="inform-global-risk-index">
     <div class="filter-controls">
       <label>
         <input type="radio" v-model="sortOption" value="alphabetical" /> Alphabetical
@@ -151,10 +150,16 @@ watch(sortedData, (newData) => {
     
     <div id="INFORM-chart"></div>
   </div>
-  </div>
 </template>
 
 <style scoped>
+.INFORM-risk-index {
+  margin: 0;
+  width: 50%;
+  height: 650px;
+  overflow-y: auto;
+}
+
 #INFORM-chart {
   margin: 0;
   width: 100%;

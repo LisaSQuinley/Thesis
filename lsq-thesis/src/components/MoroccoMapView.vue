@@ -40,7 +40,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 90%;    /* Full width of the viewport */
+    width: 100%;    /* Full width of the viewport */
     height: 700px;
   }
   
