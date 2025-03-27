@@ -6,6 +6,12 @@ import * as d3 from 'd3';
 const chartData = ref([]);
 const sortOption = ref('descending'); // Default sort: Decreasing risk index
 
+const title = d3.select("INFORM-chart")
+    title.append("text")
+    .attr("text-anchor", "middle")
+    .attr("font-weight", "bold")
+    .text("INFORM Risk Index by Country");
+
 // Function to sort data based on selected option
 const sortData = (data, option) => {
   if (option === 'alphabetical') {
@@ -95,14 +101,6 @@ const createChart = (data) => {
   svg.append("g")
     .attr("class", "y-axis")
     .call(d3.axisLeft(y));
-
-  // Add chart title
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", -margin.top / 2)
-    .attr("text-anchor", "middle")
-    .attr("font-weight", "bold")
-    .text("INFORM Risk Index by Country");
 };
 
 onMounted(() => {
