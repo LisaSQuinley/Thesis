@@ -58,11 +58,11 @@ html, body {
   justify-content: center;
   align-items: center;
   height: 700px;
-  width: 100%;    /* Full width of the viewport */
+  width: 50%;    /* Full width of the viewport */
 }
 
 l-map {
   height: 600px;
-  width: 100%;
+  width: 50%;
 }
 </style>

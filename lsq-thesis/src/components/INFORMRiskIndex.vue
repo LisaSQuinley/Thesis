@@ -38,7 +38,7 @@ const normalizeColumnNames = (data) => {
 
 const createChart = (data) => {
   // Clear existing chart
-  d3.select("#chart").select("svg").remove();
+  d3.select("#INFORM-chart").select("svg").remove();
   
   const margin = { top: 40, right: 30, bottom: 40, left: 150 };
   const width = 500 - margin.left - margin.right;
@@ -48,7 +48,7 @@ const createChart = (data) => {
   const svgHeight = data.length * barHeight + margin.top + margin.bottom;
 
   // Create the SVG element for the bar chart
-  const svg = d3.select("#chart")
+  const svg = d3.select("#INFORM-chart")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", svgHeight)
@@ -136,6 +136,7 @@ watch(sortedData, (newData) => {
 <template>
   <div>
     <!-- Filter controls -->
+     <div id="inform-global-risk-index">
     <div class="filter-controls">
       <label>
         <input type="radio" v-model="sortOption" value="alphabetical" /> Alphabetical
@@ -148,13 +149,14 @@ watch(sortedData, (newData) => {
       </label>
     </div>
     
-    <div id="chart"></div>
+    <div id="INFORM-chart"></div>
+  </div>
   </div>
 </template>
 
 <style scoped>
-#chart {
-  margin: auto;
+#INFORM-chart {
+  margin: 0;
   width: 100%;
   height: 650px;
   overflow-y: auto;
