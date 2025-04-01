@@ -1,13 +1,13 @@
 <template>
-    <div class="rainfall-precipitation">
-      <h3>Rainfall Graphic</h3>
+    <div class="sheep-cattle-herds">
+      <h3>Decreasing Sheep and Cattle Herds Graphic</h3>
     </div>
   </template>
 
   
   <!-- Add "scoped" attribute to limit CSS to this component only -->
   <style scoped>
-.rainfall-precipitation {
+.sheep-cattle-herds {
   display: flex;
   justify-content: center;
   align-items: center;

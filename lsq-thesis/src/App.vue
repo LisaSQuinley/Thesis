@@ -9,6 +9,10 @@
       <MeanTemperature />
     </div>
     <div class="charts-wrapper">
+      <SheepCattleHerds />
+      <LandPloughedWheat />
+    </div>
+    <div class="charts-wrapper">
       <WorldMapViewTimeline />
       <INFORMRiskIndex />
     </div>
@@ -26,6 +30,8 @@ import HelloMorocco from './components/HelloMorocco.vue'
 import MoroccoMapView from './components/MoroccoMapView.vue'
 import RainfallPrecipitation from './components/RainfallPrecipitation.vue'
 import MeanTemperature from './components/MeanTemperature.vue'
+import SheepCattleHerds from './components/SheepCattleHerds.vue'
+import LandPloughedWheat from './components/LandPloughedWheat.vue'
 import WorldMapViewTimeline from './components/WorldMapViewTimeline.vue'
 import INFORMRiskIndex from './components/INFORMRiskIndex.vue'
 
@@ -36,6 +42,8 @@ export default {
     MoroccoMapView,
     RainfallPrecipitation,
     MeanTemperature,
+    SheepCattleHerds,
+    LandPloughedWheat,
     WorldMapViewTimeline,
     INFORMRiskIndex,
   }

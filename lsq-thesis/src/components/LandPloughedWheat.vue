@@ -1,13 +1,13 @@
 <template>
-    <div class="rainfall-precipitation">
-      <h3>Rainfall Graphic</h3>
+    <div class="land-ploughed-wheat">
+      <h3>Amount of Land Ploughed for Wheat Graphic</h3>
     </div>
   </template>
 
   
   <!-- Add "scoped" attribute to limit CSS to this component only -->
   <style scoped>
-.rainfall-precipitation {
+.land-ploughed-wheat {
   display: flex;
   justify-content: center;
   align-items: center;
