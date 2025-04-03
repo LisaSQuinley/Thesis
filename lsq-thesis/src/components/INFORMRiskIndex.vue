@@ -20,11 +20,14 @@ onMounted(async () => {
     const riskData = data.map(row => {
       let normalizedRow = {};
       for (const [key, value] of Object.entries(row)) {
-        const normalizedKey = key.toLowerCase().replace(/\s+/g, "_");
+        const normalizedKey = key.toLowerCase().replace(/\s+/g, "_").replace(/&/g, "and");
         normalizedRow[normalizedKey] = value;
       }
+      // Convert the necessary columns to numbers
       normalizedRow.inform_risk = +normalizedRow.inform_risk;
       normalizedRow.vulnerability = +normalizedRow.vulnerability;
+      normalizedRow.hazard_and_exposure = +normalizedRow.hazard_and_exposure;  // Adding this column
+      normalizedRow.lack_of_coping_capacity = +normalizedRow.lack_of_coping_capacity;  // Adding this column
       return normalizedRow;
     });
 
@@ -50,9 +53,13 @@ onMounted(async () => {
       if (riskInfo) {
         feature.properties.inform_risk = riskInfo.inform_risk;
         feature.properties.vulnerability = riskInfo.vulnerability;
+        feature.properties.hazard_and_exposure = riskInfo.hazard_and_exposure;  // Adding this to GeoJSON
+        feature.properties.lack_of_coping_capacity = riskInfo.lack_of_coping_capacity;  // Adding this to GeoJSON
       } else {
         feature.properties.inform_risk = null;
         feature.properties.vulnerability = null;
+        feature.properties.hazard_and_exposure = null;  // Default to null if no match
+        feature.properties.lack_of_coping_capacity = null;  // Default to null if no match
       }
     });
 
@@ -61,6 +68,7 @@ onMounted(async () => {
     console.error("Error loading data:", error);
   }
 });
+
 
 // Color scale for selected column (either INFORM Risk or VULNERABILITY)
 const colorScale = d3.scaleLinear()
@@ -145,10 +153,16 @@ watch(chartData, (newData) => {
     <!-- Filter Controls (Radio buttons) -->
     <div class="filter-controls">
       <label>
-        <input type="radio" v-model="riskColumn" value="inform_risk" /> INFORM Risk
+        <input type="radio" v-model="riskColumn" value="inform_risk" /> INFORM Risk Index
+      </label>
+      <label>
+        <input type="radio" v-model="riskColumn" value="hazard_and_exposure" /> Hazard & Exposure
       </label>
       <label>
         <input type="radio" v-model="riskColumn" value="vulnerability" /> Vulnerability
+      </label>
+      <label>
+        <input type="radio" v-model="riskColumn" value="lack_of_coping_capacity" /> Lack of Coping Capacity
       </label>
     </div>
 
@@ -234,8 +248,12 @@ l-map {
   fill: orange;
 }
 
+h3 {
+  margin: 0 0 10px 0;
+}
+
 .filter-controls {
-  margin: 10px 0;
+  margin: 0 0 10px 0;
   text-align: center;
 }
 </style>
