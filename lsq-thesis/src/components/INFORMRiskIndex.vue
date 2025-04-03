@@ -2,7 +2,7 @@
 import { onMounted, ref, computed, watch } from "vue";
 import * as d3 from "d3";
 import "leaflet/dist/leaflet.css";
-import { LMap, LTileLayer, LGeoJson } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LGeoJson, LPopup } from "@vue-leaflet/vue-leaflet";
 
 // Reactive state
 const zoom = ref(2);
@@ -10,31 +10,49 @@ const geoJsonData = ref(null);
 const chartData = ref([]);
 const sortOption = ref("descending"); // Default sorting order
 
-// Load GeoJSON when component mounts
-onMounted(() => {
-  fetch("/data/country-boundaries.geojson")
-    .then((response) => response.json())
-    .then((data) => {
-      geoJsonData.value = data;
-    })
-    .catch((error) => console.error("Error loading GeoJSON file:", error));
+// Load and merge GeoJSON with INFORM risk data
+onMounted(async () => {
+  try {
+    // Load INFORM Risk Index data
+    const data = await d3.csv("./data/INFORM_Risk_2025_v069_index.csv");
 
-  // Load and process CSV data
-  d3.csv("./data/INFORM_Risk_2025_v069_index.csv")
-    .then((data) => {
-      data = data.map((row) => {
-        let normalizedRow = {};
-        for (const [key, value] of Object.entries(row)) {
-          const normalizedKey = key.toLowerCase().replace(/\s+/g, "_");
-          normalizedRow[normalizedKey] = value;
-        }
-        normalizedRow.inform_risk = +normalizedRow.inform_risk;
-        return normalizedRow;
-      });
+    // Normalize and convert values
+    const riskData = data.map(row => {
+      let normalizedRow = {};
+      for (const [key, value] of Object.entries(row)) {
+        const normalizedKey = key.toLowerCase().replace(/\s+/g, "_");
+        normalizedRow[normalizedKey] = value;
+      }
+      normalizedRow.inform_risk = +normalizedRow.inform_risk;
+      return normalizedRow;
+    });
 
-      chartData.value = data;
-    })
-    .catch((error) => console.error("Error loading CSV:", error));
+    chartData.value = riskData;
+
+    // Load GeoJSON
+    const geoJsonResponse = await fetch("/data/country-boundaries.geojson");
+    const geoJson = await geoJsonResponse.json();
+
+    // Merge INFORM data with GeoJSON
+    geoJson.features.forEach(feature => {
+      const countryName = feature.properties.name; // Adjust based on GeoJSON properties
+
+      // Find matching INFORM data
+      const riskInfo = riskData.find(d => d.country === countryName);
+      
+      if (riskInfo) {
+        feature.properties.inform_risk = riskInfo.inform_risk;
+        feature.properties.risk_class = riskInfo.risk_class;
+      } else {
+        feature.properties.inform_risk = null; // Mark missing data
+        feature.properties.risk_class = "Unknown";
+      }
+    });
+
+    geoJsonData.value = geoJson;
+  } catch (error) {
+    console.error("Error loading data:", error);
+  }
 });
 
 // Sorting function
@@ -50,6 +68,22 @@ const sortData = (data, option) => {
 
 // Computed property for sorted data
 const sortedData = computed(() => (chartData.value.length ? sortData(chartData.value, sortOption.value) : []));
+
+// Color scale for risk levels
+const colorScale = d3.scaleOrdinal()
+  .domain(["Very Low", "Low", "Medium", "High", "Very High", "Unknown"])
+  .range(["#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747", "#D3D3D3"]); // Grey for unknown
+
+// GeoJSON styling function
+const geoJsonStyle = (feature) => {
+  return {
+    fillColor: colorScale(feature.properties.risk_class || "Unknown"),
+    weight: 1,
+    opacity: 1,
+    color: "black",
+    fillOpacity: 0.7
+  };
+};
 
 // Function to create/update the bar chart
 const createChart = (data) => {
@@ -68,10 +102,6 @@ const createChart = (data) => {
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const maxRisk = d3.max(data, (d) => d.inform_risk);
-
-  const colorScale = d3.scaleOrdinal()
-    .domain(["Very Low", "Low", "Medium", "High", "Very High"])
-    .range(["#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
 
   const x = d3.scaleLinear().domain([0, maxRisk]).nice().range([0, width]);
 
@@ -102,7 +132,6 @@ watch(sortedData, (newData) => {
     createChart(newData);
   }
 }, { immediate: true });
-
 </script>
 
 <template>
@@ -117,7 +146,14 @@ watch(sortedData, (newData) => {
           subdomains="abcd"
         ></l-tile-layer>
 
-        <l-geo-json :geojson="geoJsonData"></l-geo-json>
+        <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle">
+  <template #popup="{ feature }">
+    <l-popup>
+      <strong>{{ feature.properties.name }}</strong><br>
+      Risk Level: {{ feature.properties.inform_risk || "N/A" }}
+    </l-popup>
+  </template>
+</l-geo-json>
       </l-map>
     </div>
 
@@ -143,10 +179,7 @@ watch(sortedData, (newData) => {
 </template>
 
 <style scoped>
-h3 {
-  margin: 0px;
-}
-/* Main container layout */
+/* Layout */
 .container {
   display: flex;
   justify-content: space-between;
@@ -178,9 +211,6 @@ l-map {
   overflow-y: auto;
 }
 
-.bar {
-  transition: all 0.3s ease;
-}
 .bar:hover {
   fill: orange;
 }
@@ -188,10 +218,5 @@ l-map {
 .filter-controls {
   margin: 10px 0;
   text-align: center;
-}
-
-.filter-controls label {
-  margin: 0 10px;
-  cursor: pointer;
 }
 </style>
