@@ -1,22 +1,22 @@
 <script setup>
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import * as d3 from "d3";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LGeoJson, LPopup } from "@vue-leaflet/vue-leaflet";
 
-// Reactive state
+// Reactive state for zoom and geoJSON data
 const zoom = ref(2);
 const geoJsonData = ref(null);
 const chartData = ref([]);
-const sortOption = ref("descending"); // Default sorting order
+const riskColumn = ref("inform_risk"); // Default to INFORM Risk
 
 // Load and merge GeoJSON with INFORM risk data
 onMounted(async () => {
   try {
-    // Load INFORM Risk Index data
+    // Load the CSV data
     const data = await d3.csv("./data/INFORM_Risk_2025_v069_index.csv");
 
-    // Normalize and convert values
+    // Normalize the data
     const riskData = data.map(row => {
       let normalizedRow = {};
       for (const [key, value] of Object.entries(row)) {
@@ -24,39 +24,37 @@ onMounted(async () => {
         normalizedRow[normalizedKey] = value;
       }
       normalizedRow.inform_risk = +normalizedRow.inform_risk;
+      normalizedRow.vulnerability = +normalizedRow.vulnerability;
       return normalizedRow;
     });
 
     chartData.value = riskData;
 
-    // Load GeoJSON
+    // Load the GeoJSON
     const geoJsonResponse = await fetch("/data/country-boundaries.geojson");
     const geoJson = await geoJsonResponse.json();
 
-// Merge INFORM data with GeoJSON
-geoJson.features.forEach(feature => {
-  let riskInfo = null;
+    // Merge INFORM data with GeoJSON
+    geoJson.features.forEach(feature => {
+      let riskInfo = null;
 
-  // First, try matching by country name (SOVEREIGNT)
-  const countryName = feature.properties.SOVEREIGNT;
-  riskInfo = riskData.find(d => d.country === countryName);
+      // Match by country name or ISO3 code
+      const countryName = feature.properties.SOVEREIGNT;
+      riskInfo = riskData.find(d => d.country === countryName);
 
-  // If no match found, try matching by ISO3 code (SOV_A3)
-  if (!riskInfo) {
-    const countryIso3 = feature.properties.SOV_A3;
-    riskInfo = riskData.find(d => d.iso3 === countryIso3);
-  }
+      if (!riskInfo) {
+        const countryIso3 = feature.properties.SOV_A3;
+        riskInfo = riskData.find(d => d.iso3 === countryIso3);
+      }
 
-  if (riskInfo) {
-    feature.properties.inform_risk = riskInfo.inform_risk;
-    feature.properties.risk_class = riskInfo.risk_class;
-  } else {
-    feature.properties.inform_risk = null; // Mark missing data
-    feature.properties.risk_class = "Unknown";
-  }
-});
-
-
+      if (riskInfo) {
+        feature.properties.inform_risk = riskInfo.inform_risk;
+        feature.properties.vulnerability = riskInfo.vulnerability;
+      } else {
+        feature.properties.inform_risk = null;
+        feature.properties.vulnerability = null;
+      }
+    });
 
     geoJsonData.value = geoJson;
   } catch (error) {
@@ -64,40 +62,28 @@ geoJson.features.forEach(feature => {
   }
 });
 
-// Sorting function
-const sortData = (data, option) => {
-  if (option === "alphabetical") {
-    return [...data].sort((a, b) => a.country.localeCompare(b.country));
-  } else if (option === "ascending") {
-    return [...data].sort((a, b) => a.inform_risk - b.inform_risk);
-  } else {
-    return [...data].sort((a, b) => b.inform_risk - a.inform_risk);
-  }
-};
-
-// Computed property for sorted data
-const sortedData = computed(() => (chartData.value.length ? sortData(chartData.value, sortOption.value) : []));
-
-// Color scale for risk levels
-const colorScale = d3.scaleOrdinal()
-  .domain(["Very Low", "Low", "Medium", "High", "Very High", "Unknown"])
-  .range(["#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747", "#D3D3D3"]); // Grey for unknown
+// Color scale for selected column (either INFORM Risk or VULNERABILITY)
+const colorScale = d3.scaleLinear()
+  .domain([0, 2, 4, 6, 8, 10])
+  .range(["#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747", "#D3D3D3"]);
 
 // GeoJSON styling function
 const geoJsonStyle = (feature) => {
+  const riskValue = feature.properties[riskColumn.value];
   return {
-    fillColor: colorScale(feature.properties.risk_class || "Unknown"),
+    fillColor: riskValue !== null && riskValue !== undefined ? colorScale(riskValue) : "#D3D3D3",
     weight: 1,
     opacity: 1,
     color: "black",
-    fillOpacity: 0.7
+    fillOpacity: 1
   };
 };
 
+
 // Function to create/update the bar chart
 const createChart = (data) => {
+  // Rebuild chart using d3.js based on selected risk column
   d3.select("#INFORM-chart").select("svg").remove();
-
   const margin = { top: 40, right: 30, bottom: 40, left: 150 };
   const width = 500 - margin.left - margin.right;
   const barHeight = 25;
@@ -110,54 +96,59 @@ const createChart = (data) => {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const maxRisk = d3.max(data, (d) => d.inform_risk);
+  const maxRisk = d3.max(data, (d) => d[riskColumn.value]);
 
   const x = d3.scaleLinear().domain([0, maxRisk]).nice().range([0, width]);
-
-  const y = d3.scaleBand()
-    .domain(data.map((d) => d.country))
+  const y = d3.scaleBand().domain(data.map((d) => d.country))
     .range([0, svgHeight - margin.top - margin.bottom])
     .padding(0.1);
 
-  svg
-    .selectAll(".bar")
+  svg.selectAll(".bar")
     .data(data)
     .enter()
     .append("rect")
     .attr("class", "bar")
     .attr("x", 0)
     .attr("y", (d) => y(d.country))
-    .attr("width", (d) => x(d.inform_risk))
+    .attr("width", (d) => x(d[riskColumn.value]))
     .attr("height", y.bandwidth())
-    .attr("fill", (d) => colorScale(d.risk_class));
+    .attr("fill", (d) => colorScale(d[riskColumn.value]));
 
   svg.append("g").attr("class", "x-axis").call(d3.axisTop(x));
   svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
 };
 
-// Watch for changes and update chart
-watch(sortedData, (newData) => {
+// Watch for changes to riskColumn and update the chart and map
+watch(riskColumn, () => {
+  createChart(chartData.value);
+  // Reapply GeoJSON style when riskColumn changes
+  geoJsonData.value && geoJsonData.value.features.forEach(feature => {
+    feature.properties.fillColor = feature.properties[riskColumn.value] !== null && feature.properties[riskColumn.value] !== undefined
+      ? colorScale(feature.properties[riskColumn.value])
+      : "#D3D3D3";
+  });
+});
+
+watch(chartData, (newData) => {
   if (newData.length > 0) {
     createChart(newData);
   }
-}, { immediate: true });
+});
+
 </script>
+
 
 <template>
   <div class="container">
-    <!-- Title spanning both sections -->
     <h3 class="main-title">INFORM Risk 2025</h3>
 
-    <!-- Filter Controls (Radio buttons) moved below the title -->
+    <!-- Filter Controls (Radio buttons) -->
     <div class="filter-controls">
       <label>
-        <input type="radio" v-model="sortOption" value="alphabetical" /> Alphabetical
+        <input type="radio" v-model="riskColumn" value="inform_risk" /> INFORM Risk
       </label>
       <label>
-        <input type="radio" v-model="sortOption" value="ascending" /> Increasing Risk
-      </label>
-      <label>
-        <input type="radio" v-model="sortOption" value="descending" /> Decreasing Risk
+        <input type="radio" v-model="riskColumn" value="vulnerability" /> Vulnerability
       </label>
     </div>
 
@@ -176,7 +167,7 @@ watch(sortedData, (newData) => {
             <template #popup="{ feature }">
               <l-popup>
                 <strong>{{ feature.properties.name }}</strong><br>
-                Risk Level: {{ feature.properties.inform_risk || "N/A" }}
+                Risk Level: {{ feature.properties[riskColumn.value] || "N/A" }}
               </l-popup>
             </template>
           </l-geo-json>
@@ -190,7 +181,6 @@ watch(sortedData, (newData) => {
     </div>
   </div>
 </template>
-
 
 <style scoped>
 /* Layout */
