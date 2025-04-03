@@ -13,8 +13,10 @@
       <LandPloughedWheat />
     </div>
     <div class="charts-wrapper">
-      <WorldMapViewTimeline />
       <INFORMRiskIndex />
+    </div>
+    <div class="charts-wrapper">
+      <WorldMapViewTimeline />
     </div>
   </div>
   <div class="footer">
