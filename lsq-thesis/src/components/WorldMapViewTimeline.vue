@@ -1,20 +1,3 @@
-<template>
-  <div class="map-container">
-    <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
-      <!-- Tile Layer -->
-      <l-tile-layer
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        layer-type="base"
-        attribution="OpenStreetMap | contributors: CartoDB"
-        subdomains="abcd"
-      ></l-tile-layer>
-
-      <!-- GeoJSON Layer -->
-      <l-geo-json :geojson="geoJsonData"></l-geo-json>
-    </l-map>
-  </div>
-</template>
-
 <script>
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LGeoJson } from "@vue-leaflet/vue-leaflet";
@@ -33,7 +16,7 @@ export default {
   },
   mounted() {
     // Load the GeoJSON file when the component is mounted
-    fetch("/data/country-boundaries.geojson")
+    fetch("./data/country-boundaries.geojson")
       .then(response => response.json())
       .then(data => {
         this.geoJsonData = data;  // Assign the loaded GeoJSON data to the component data
@@ -44,6 +27,23 @@ export default {
   },
 };
 </script>
+
+<template>
+  <div class="map-container">
+    <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
+      <!-- Tile Layer -->
+      <l-tile-layer
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        layer-type="base"
+        attribution="OpenStreetMap | contributors: CartoDB"
+        subdomains="abcd"
+      ></l-tile-layer>
+
+      <!-- GeoJSON Layer -->
+      <l-geo-json :geojson="geoJsonData"></l-geo-json>
+    </l-map>
+  </div>
+</template>
 
 <style>
 /* Full screen height and width */

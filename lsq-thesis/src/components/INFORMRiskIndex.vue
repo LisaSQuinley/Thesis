@@ -34,7 +34,7 @@ onMounted(async () => {
     chartData.value = riskData;
 
     // Load the GeoJSON
-    const geoJsonResponse = await fetch("/data/country-boundaries.geojson");
+    const geoJsonResponse = await fetch("./data/country-boundaries.geojson");
     const geoJson = await geoJsonResponse.json();
 
     // Merge INFORM data with GeoJSON
@@ -53,8 +53,8 @@ onMounted(async () => {
       if (riskInfo) {
         feature.properties.inform_risk = riskInfo.inform_risk;
         feature.properties.vulnerability = riskInfo.vulnerability;
-        feature.properties.hazard_and_exposure = riskInfo.hazard_and_exposure;  // Adding this to GeoJSON
-        feature.properties.lack_of_coping_capacity = riskInfo.lack_of_coping_capacity;  // Adding this to GeoJSON
+        feature.properties.hazard_and_exposure = riskInfo.hazard_and_exposure; 
+        feature.properties.lack_of_coping_capacity = riskInfo.lack_of_coping_capacity; 
       } else {
         feature.properties.inform_risk = null;
         feature.properties.vulnerability = null;
@@ -92,8 +92,8 @@ const geoJsonStyle = (feature) => {
 const createChart = (data) => {
   // Rebuild chart using d3.js based on selected risk column
   d3.select("#INFORM-chart").select("svg").remove();
-  const margin = { top: 40, right: 30, bottom: 40, left: 150 };
-  const width = 500 - margin.left - margin.right;
+  const margin = { top: 40, right: 30, bottom: 40, left: 175 };
+  const width = 675 - margin.left - margin.right;
   const barHeight = 25;
   const svgHeight = data.length * barHeight + margin.top + margin.bottom;
 
