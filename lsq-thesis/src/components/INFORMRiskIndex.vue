@@ -33,21 +33,30 @@ onMounted(async () => {
     const geoJsonResponse = await fetch("/data/country-boundaries.geojson");
     const geoJson = await geoJsonResponse.json();
 
-    // Merge INFORM data with GeoJSON
-    geoJson.features.forEach(feature => {
-      const countryName = feature.properties.name; // Adjust based on GeoJSON properties
+// Merge INFORM data with GeoJSON
+geoJson.features.forEach(feature => {
+  let riskInfo = null;
 
-      // Find matching INFORM data
-      const riskInfo = riskData.find(d => d.country === countryName);
-      
-      if (riskInfo) {
-        feature.properties.inform_risk = riskInfo.inform_risk;
-        feature.properties.risk_class = riskInfo.risk_class;
-      } else {
-        feature.properties.inform_risk = null; // Mark missing data
-        feature.properties.risk_class = "Unknown";
-      }
-    });
+  // First, try matching by country name (SOVEREIGNT)
+  const countryName = feature.properties.SOVEREIGNT;
+  riskInfo = riskData.find(d => d.country === countryName);
+
+  // If no match found, try matching by ISO3 code (SOV_A3)
+  if (!riskInfo) {
+    const countryIso3 = feature.properties.SOV_A3;
+    riskInfo = riskData.find(d => d.iso3 === countryIso3);
+  }
+
+  if (riskInfo) {
+    feature.properties.inform_risk = riskInfo.inform_risk;
+    feature.properties.risk_class = riskInfo.risk_class;
+  } else {
+    feature.properties.inform_risk = null; // Mark missing data
+    feature.properties.risk_class = "Unknown";
+  }
+});
+
+
 
     geoJsonData.value = geoJson;
   } catch (error) {
@@ -136,51 +145,71 @@ watch(sortedData, (newData) => {
 
 <template>
   <div class="container">
-    <!-- Leaflet Map -->
-    <div class="map-container">
-      <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
-        <l-tile-layer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          layer-type="base"
-          attribution="OpenStreetMap | contributors: CartoDB"
-          subdomains="abcd"
-        ></l-tile-layer>
+    <!-- Title spanning both sections -->
+    <h3 class="main-title">INFORM Risk 2025</h3>
 
-        <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle">
-  <template #popup="{ feature }">
-    <l-popup>
-      <strong>{{ feature.properties.name }}</strong><br>
-      Risk Level: {{ feature.properties.inform_risk || "N/A" }}
-    </l-popup>
-  </template>
-</l-geo-json>
-      </l-map>
+    <!-- Filter Controls (Radio buttons) moved below the title -->
+    <div class="filter-controls">
+      <label>
+        <input type="radio" v-model="sortOption" value="alphabetical" /> Alphabetical
+      </label>
+      <label>
+        <input type="radio" v-model="sortOption" value="ascending" /> Increasing Risk
+      </label>
+      <label>
+        <input type="radio" v-model="sortOption" value="descending" /> Decreasing Risk
+      </label>
     </div>
 
-    <!-- INFORM Risk Index Chart -->
-    <div class="chart-container">
-      <h3 class="chart-title">INFORM Risk Index 2025</h3>
+    <div class="content">
+      <!-- Leaflet Map -->
+      <div class="map-container">
+        <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
+          <l-tile-layer
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            layer-type="base"
+            attribution="OpenStreetMap | contributors: CartoDB"
+            subdomains="abcd"
+          ></l-tile-layer>
 
-      <div class="filter-controls">
-        <label>
-          <input type="radio" v-model="sortOption" value="alphabetical" /> Alphabetical
-        </label>
-        <label>
-          <input type="radio" v-model="sortOption" value="ascending" /> Increasing Risk
-        </label>
-        <label>
-          <input type="radio" v-model="sortOption" value="descending" /> Decreasing Risk
-        </label>
+          <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle">
+            <template #popup="{ feature }">
+              <l-popup>
+                <strong>{{ feature.properties.name }}</strong><br>
+                Risk Level: {{ feature.properties.inform_risk || "N/A" }}
+              </l-popup>
+            </template>
+          </l-geo-json>
+        </l-map>
       </div>
 
-      <div id="INFORM-chart"></div>
+      <!-- INFORM Risk Index Chart -->
+      <div class="chart-container">
+        <div id="INFORM-chart"></div>
+      </div>
     </div>
   </div>
 </template>
 
+
 <style scoped>
 /* Layout */
 .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.main-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
