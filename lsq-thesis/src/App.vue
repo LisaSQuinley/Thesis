@@ -75,7 +75,7 @@ export default {
 
 .footer {
   width: 100%;
-  margin: 10px;
+  margin: 0px;
   text-align: center;
   padding: 10px 0;
 }

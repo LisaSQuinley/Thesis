@@ -4,97 +4,30 @@ import * as d3 from "d3";
 import "leaflet/dist/leaflet.css";
 import { LMap, LTileLayer, LGeoJson, LPopup } from "@vue-leaflet/vue-leaflet";
 
-// Reactive state for zoom and geoJSON data
 const zoom = ref(2);
 const geoJsonData = ref(null);
 const chartData = ref([]);
 const sortMethod = ref("alphabetical");
-const riskColumn = ref("inform_risk"); // Default to INFORM Risk
-
-// Track the window width
+const riskColumn = ref("inform_risk");
 const windowWidth = ref(window.innerWidth);
 
-// Resize event handler
 const handleResize = () => {
   windowWidth.value = window.innerWidth;
 };
 
-// Add event listener for window resize
 onMounted(() => {
   window.addEventListener("resize", handleResize);
+  loadGeoJsonMap();
 });
 
-// Clean up the event listener when the component is destroyed
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
 });
 
-// Load and merge GeoJSON with INFORM risk data
-onMounted(async () => {
-  try {
-    // Load the CSV data
-    const data = await d3.csv("./data/INFORM_Risk_2025_v069_index.csv");
-
-    // Normalize the data
-    const riskData = data.map(row => {
-      let normalizedRow = {};
-      for (const [key, value] of Object.entries(row)) {
-        const normalizedKey = key.toLowerCase().replace(/\s+/g, "_").replace(/&/g, "and");
-        normalizedRow[normalizedKey] = value;
-      }
-      // Convert the necessary columns to numbers
-      normalizedRow.inform_risk = +normalizedRow.inform_risk;
-      normalizedRow.vulnerability = +normalizedRow.vulnerability;
-      normalizedRow.hazard_and_exposure = +normalizedRow.hazard_and_exposure;  // Adding this column
-      normalizedRow.lack_of_coping_capacity = +normalizedRow.lack_of_coping_capacity;  // Adding this column
-      return normalizedRow;
-    });
-
-    chartData.value = riskData;
-
-    // Load the GeoJSON
-    const geoJsonResponse = await fetch("./data/country-boundaries.geojson");
-    const geoJson = await geoJsonResponse.json();
-
-    // Merge INFORM data with GeoJSON
-    geoJson.features.forEach(feature => {
-      let riskInfo = null;
-
-      // Match by country name or ISO3 code
-      const countryName = feature.properties.SOVEREIGNT;
-      riskInfo = riskData.find(d => d.country === countryName);
-
-      if (!riskInfo) {
-        const countryIso3 = feature.properties.SOV_A3;
-        riskInfo = riskData.find(d => d.iso3 === countryIso3);
-      }
-
-      if (riskInfo) {
-        feature.properties.inform_risk = riskInfo.inform_risk;
-        feature.properties.vulnerability = riskInfo.vulnerability;
-        feature.properties.hazard_and_exposure = riskInfo.hazard_and_exposure; 
-        feature.properties.lack_of_coping_capacity = riskInfo.lack_of_coping_capacity; 
-      } else {
-        feature.properties.inform_risk = null;
-        feature.properties.vulnerability = null;
-        feature.properties.hazard_and_exposure = null;  // Default to null if no match
-        feature.properties.lack_of_coping_capacity = null;  // Default to null if no match
-      }
-    });
-
-    geoJsonData.value = geoJson;
-  } catch (error) {
-    console.error("Error loading data:", error);
-  }
-});
-// Color scale for selected column (either INFORM Risk or VULNERABILITY)
-// Using d3.scaleThreshold to define specific color ranges
 const colorScale = d3.scaleThreshold()
-  .domain([0, 2, 4, 6, 8, 10]) // These are the thresholds for color ranges
-  .range(["white", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747", "#D3D3D3"]); // Colors for each range
+  .domain([0, 2, 4, 6, 8, 10])
+  .range(["white", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747", "#D3D3D3"]);
 
-
-// GeoJSON styling function
 const geoJsonStyle = (feature) => {
   const riskValue = feature.properties[riskColumn.value];
   return {
@@ -104,6 +37,47 @@ const geoJsonStyle = (feature) => {
     color: "black",
     fillOpacity: 1
   };
+};
+
+const loadGeoJsonMap = async () => {
+  try {
+    const data = await d3.csv("./data/INFORM_Risk_2025_v069_index.csv");
+    const riskData = data.map(row => {
+      let normalizedRow = {};
+      for (const [key, value] of Object.entries(row)) {
+        const normalizedKey = key.toLowerCase().replace(/\s+/g, "_").replace(/&/g, "and");
+        normalizedRow[normalizedKey] = value;
+      }
+      normalizedRow.inform_risk = +normalizedRow.inform_risk;
+      normalizedRow.vulnerability = +normalizedRow.vulnerability;
+      normalizedRow.hazard_and_exposure = +normalizedRow.hazard_and_exposure;
+      normalizedRow.lack_of_coping_capacity = +normalizedRow.lack_of_coping_capacity;
+      return normalizedRow;
+    });
+    chartData.value = riskData;
+
+    const geoJsonResponse = await fetch("./data/country-boundaries.geojson");
+    const geoJson = await geoJsonResponse.json();
+
+    geoJson.features.forEach(feature => {
+      let riskInfo = riskData.find(d => d.country === feature.properties.SOVEREIGNT) ||
+                      riskData.find(d => d.iso3 === feature.properties.SOV_A3);
+      if (riskInfo) {
+        feature.properties.inform_risk = riskInfo.inform_risk;
+        feature.properties.vulnerability = riskInfo.vulnerability;
+        feature.properties.hazard_and_exposure = riskInfo.hazard_and_exposure;
+        feature.properties.lack_of_coping_capacity = riskInfo.lack_of_coping_capacity;
+      } else {
+        feature.properties.inform_risk = null;
+        feature.properties.vulnerability = null;
+        feature.properties.hazard_and_exposure = null;
+        feature.properties.lack_of_coping_capacity = null;
+      }
+    });
+    geoJsonData.value = geoJson;
+  } catch (error) {
+    console.error("Error loading data:", error);
+  }
 };
 
 const createChart = (data) => {
@@ -180,16 +154,21 @@ const createChart = (data) => {
 
 
 
-// Watch for changes to riskColumn and update the chart and map
 watch(riskColumn, () => {
   createChart(chartData.value);
-  // Reapply GeoJSON style when riskColumn changes
-  geoJsonData.value && geoJsonData.value.features.forEach(feature => {
-    feature.properties.fillColor = feature.properties[riskColumn.value] !== null && feature.properties[riskColumn.value] !== undefined
-      ? colorScale(feature.properties[riskColumn.value])
-      : "#D3D3D3";
-  });
+
+  if (geoJsonData.value) {
+    geoJsonData.value.features.forEach(feature => {
+      feature.properties.fillColor = feature.properties[riskColumn.value] !== null && feature.properties[riskColumn.value] !== undefined
+        ? colorScale(feature.properties[riskColumn.value])
+        : "#D3D3D3";
+    });
+
+    // Force Vue to recognize the change in geoJsonData
+    geoJsonData.value = { ...geoJsonData.value };
+  }
 });
+
 
 // Watch for changes to sortMethod and update the chart
 watch(sortMethod, () => {
