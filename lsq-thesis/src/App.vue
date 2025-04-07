@@ -6,6 +6,8 @@
     </div>
     <div class="charts-wrapper" >
       <RainfallPrecipitation />
+    </div>
+    <div class="charts-wrapper" >
       <MeanTemperature />
     </div>
     <div class="charts-wrapper">

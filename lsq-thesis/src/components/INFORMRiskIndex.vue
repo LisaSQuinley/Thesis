@@ -106,9 +106,13 @@ const createChart = (data) => {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const maxRisk = d3.max(sortedData, (d) => d[riskColumn.value]);
+  // not using maxRisk for the x-axis domain because I want to keep it fixed at [0, 10]
+  // const maxRisk = d3.max(sortedData, (d) => d[riskColumn.value]);
 
-  const x = d3.scaleLinear().domain([0, maxRisk]).nice().range([0, width]);
+  const x = d3.scaleLinear()
+    .domain([0, 10]) // change domain to [0, 10] instead of [0, maxRisk]
+    .nice()
+    .range([0, width]);
   const y = d3.scaleBand()
     .domain(sortedData.map((d) => d.country))
     .range([0, svgHeight - margin.top - margin.bottom])
@@ -116,7 +120,7 @@ const createChart = (data) => {
 
   // Bind data to bars
   const bars = svg.selectAll(".bar")
-    .data(sortedData, (d) => d.country) // Use key function for updates
+    .data(sortedData, (d) => d.country); // Use key function for updates
 
   // Enter phase (initial bars)
   bars.enter()
@@ -132,6 +136,18 @@ const createChart = (data) => {
     .ease(d3.easeCubicOut)
     .attr("width", (d) => x(d[riskColumn.value]));
 
+  // Append text for the data point on the right side of the bar
+  bars.enter()
+    .append("text")
+    .attr("class", "bar-text")
+    .attr("x", (d) => x(d[riskColumn.value]) + 5) // Position text slightly to the right of the bar
+    .attr("y", (d) => y(d.country) + y.bandwidth() / 2)
+    .attr("dy", ".35em") // Vertically center the text
+    .text((d) => d[riskColumn.value].toFixed(1)) // Display the risk value to one decimal place
+    .style("fill", "black")
+    .style("font-size", "12px")
+    .style("font-weight", "bold");
+
   // Update phase (bars that already exist)
   bars.transition()
     .duration(1000)
@@ -140,6 +156,14 @@ const createChart = (data) => {
     .attr("width", (d) => x(d[riskColumn.value])) // Animate width change
     .attr("fill", (d) => colorScale(d[riskColumn.value]));
 
+  // Update text for the data point
+  bars.select(".bar-text")
+    .transition()
+    .duration(1000)
+    .ease(d3.easeCubicOut)
+    .attr("x", (d) => x(d[riskColumn.value]) + 5) // Adjust position with width change
+    .text((d) => d[riskColumn.value].toFixed(2));
+
   // Remove phase (bars that no longer have data)
   bars.exit()
     .transition()
@@ -147,10 +171,19 @@ const createChart = (data) => {
     .attr("width", 0)
     .remove();
 
+  // Remove text for data points when the bar is removed
+  bars.exit()
+    .select(".bar-text")
+    .transition()
+    .duration(500)
+    .attr("x", 0)
+    .remove();
+
   // Append x-axis
   svg.append("g").attr("class", "x-axis").call(d3.axisTop(x));
   svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
 };
+
 
 
 
