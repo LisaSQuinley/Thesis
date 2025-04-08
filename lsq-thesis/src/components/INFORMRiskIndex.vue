@@ -13,11 +13,13 @@ const windowWidth = ref(window.innerWidth);
 
 const handleResize = () => {
   windowWidth.value = window.innerWidth;
+  createChart(chartData.value); // Recreate the chart with the new width
 };
 
 onMounted(() => {
   window.addEventListener("resize", handleResize);
   loadGeoJsonMap();
+  createChart(chartData.value); // Create the chart initially with the loaded data
 });
 
 onBeforeUnmount(() => {
@@ -61,7 +63,7 @@ const loadGeoJsonMap = async () => {
 
     geoJson.features.forEach(feature => {
       let riskInfo = riskData.find(d => d.country === feature.properties.SOVEREIGNT) ||
-                      riskData.find(d => d.iso3 === feature.properties.SOV_A3);
+        riskData.find(d => d.iso3 === feature.properties.SOV_A3);
       if (riskInfo) {
         feature.properties.inform_risk = riskInfo.inform_risk;
         feature.properties.vulnerability = riskInfo.vulnerability;
@@ -256,12 +258,8 @@ watch(chartData, (newData) => {
       <!-- Leaflet Map -->
       <div class="map-container">
         <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
-          <l-tile-layer
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-            layer-type="base"
-            attribution="OpenStreetMap | contributors: CartoDB"
-            subdomains="abcd"
-          ></l-tile-layer>
+          <l-tile-layer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" layer-type="base"
+            attribution="OpenStreetMap | contributors: CartoDB" subdomains="abcd"></l-tile-layer>
 
           <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle">
             <template #popup="{ feature }">
