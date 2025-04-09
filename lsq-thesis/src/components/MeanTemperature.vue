@@ -61,13 +61,13 @@ import { ref, onMounted, onBeforeUnmount, nextTick, watchEffect, computed, watch
 // ==== Historical Data Refs ====
 const historicalData = ref([]);
 const historicalColumns = ref([]);
-const selectedHistoricalColumn = ref('mean');
+const selectedHistoricalColumn = ref('max');
 const historicalSvg = ref(null);
 
 // ==== Projected Data Refs ====
 const projectedData = ref([]);
 const projectedColumns = ref([]);
-const selectedProjectedColumnGroup = ref("mean"); // "mean" or "max"
+const selectedProjectedColumnGroup = ref("max"); // "mean" or "max"
 const selectedProjectedColumn = ref("");
 const projectedSvg = ref(null);
 
@@ -136,9 +136,10 @@ function renderHistoricalHeatmap() {
     const xScale = d3.scaleBand().domain(years).range([0, width]).padding(0.05);
     const yScale = d3.scaleBand().domain(months).range([height, 0]).padding(0.05);
 
-    const colorScale = d3.scaleQuantize()
-        .domain([d3.min(heatmapData, d => d.value), d3.max(heatmapData, d => d.value)])
-        .range(["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
+    const colorScale = d3.scaleThreshold()
+    .domain([15, 20, 25, 30, 35])
+    .range(["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
+
 
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -244,9 +245,10 @@ function renderProjectedHeatmap() {
     const xScale = d3.scaleBand().domain(years).range([0, width]).padding(0.05);
     const yScale = d3.scaleBand().domain(months).range([height, 0]).padding(0.05);
 
-    const colorScale = d3.scaleQuantize()
-        .domain([d3.min(heatmapData, d => d.value), d3.max(heatmapData, d => d.value)])
-        .range(["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
+    const colorScale = d3.scaleThreshold()
+    .domain([15, 20, 25, 30, 35])
+    .range(["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
+
 
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 

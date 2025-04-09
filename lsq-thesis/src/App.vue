@@ -1,6 +1,6 @@
 <template>
   <div>
-    <HelloMorocco msg="Droughts! Floods! Heat Waves! Oh My!"/>
+    <HelloMorocco msg="Droughts! Floods! Fires!"/>
     <div class="charts-wrapper">
       <MoroccoMapView />
     </div>
