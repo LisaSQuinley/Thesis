@@ -86,7 +86,7 @@ const createChart = (data) => {
   // Remove the previous chart
   d3.select("#INFORM-chart").select("svg").remove();
 
-  const margin = { top: 40, right: 30, bottom: 40, left: 175 };
+  const margin = { top: 40, right: 30, bottom: 40, left: 195 };
   const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
   const barHeight = 25;
   const svgHeight = data.length * barHeight + margin.top + margin.bottom;
@@ -293,8 +293,6 @@ watch(chartData, (newData) => {
 
 .main-title {
   text-align: center;
-  font-size: 24px;
-  font-weight: bold;
   margin-bottom: 10px;
   width: 100%;
 }
@@ -348,4 +346,5 @@ l-map {
 h3 {
   margin: 0 0 10px 0;
 }
+
 </style>

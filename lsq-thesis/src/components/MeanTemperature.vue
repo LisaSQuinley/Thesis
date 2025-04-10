@@ -102,7 +102,7 @@ function renderHistoricalHeatmap() {
 
     const container = historicalSvg.value.parentNode;
     const containerWidth = container.getBoundingClientRect().width;
-    const containerHeight = containerWidth ;
+    const containerHeight = containerWidth;
 
     const svg = d3.select(historicalSvg.value)
         .attr("width", containerWidth)
@@ -137,20 +137,28 @@ function renderHistoricalHeatmap() {
     const yScale = d3.scaleBand().domain(months).range([height, 0]).padding(0.05);
 
     const colorScale = d3.scaleThreshold()
-    .domain([15, 20, 25, 30, 35])
-    .range(["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
+        .domain([15, 20, 25, 30, 35])
+        .range(["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
 
 
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+    const filteredYears = years.filter((year, idx, arr) => {
+        return (
+            idx === 0 || // First year
+            idx === arr.length - 1 || // Last year
+            year % 5 === 0 // Years ending in 0 or 5
+        );
+    });
+
     g.append("g")
         .selectAll(".x-axis")
-        .data(years)
+        .data(filteredYears)
         .enter()
         .append("text")
         .attr("class", "x-axis")
         .attr("x", d => xScale(d) + xScale.bandwidth() / 1 + 30)
-        .attr("y", height + 47)
+        .attr("y", height + 45)
         .attr("transform", d => `rotate(-90, ${xScale(d) + xScale.bandwidth() / 2}, ${height + 40})`)
         .style("text-anchor", "end")
         .text(d => d);
@@ -209,7 +217,7 @@ function renderProjectedHeatmap() {
 
     const container = projectedSvg.value.parentNode;
     const containerWidth = container.getBoundingClientRect().width;
-    const containerHeight = containerWidth ;
+    const containerHeight = containerWidth;
 
     const svg = d3.select(projectedSvg.value)
         .attr("width", containerWidth)
@@ -246,20 +254,28 @@ function renderProjectedHeatmap() {
     const yScale = d3.scaleBand().domain(months).range([height, 0]).padding(0.05);
 
     const colorScale = d3.scaleThreshold()
-    .domain([15, 20, 25, 30, 35])
-    .range(["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
+        .domain([15, 20, 25, 30, 35])
+        .range(["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]);
 
 
     const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+    const filteredYears = years.filter((year, idx, arr) => {
+        return (
+            idx === 0 || // First year
+            idx === arr.length - 1 || // Last year
+            year % 5 === 0 // Years ending in 0 or 5
+        );
+    });
+
     g.append("g")
         .selectAll(".x-axis")
-        .data(years)
+        .data(filteredYears)
         .enter()
         .append("text")
         .attr("class", "x-axis")
         .attr("x", d => xScale(d) + xScale.bandwidth() / 1 + 30)
-        .attr("y", height + 47)
+        .attr("y", height + 45)
         .attr("transform", d => `rotate(-90, ${xScale(d) + xScale.bandwidth() / 2}, ${height + 40})`)
         .style("text-anchor", "end")
         .text(d => d);
@@ -414,7 +430,8 @@ svg {
 }
 
 .x-axis {
-    font-size: 12px;
+    font-size: 0.75em;
+    text-align: right;
 }
 
 .y-axis {

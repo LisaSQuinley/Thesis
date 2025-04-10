@@ -56,7 +56,8 @@ export default {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Parkinsans", sans-serif;
+  /* font-family: Avenir, Helvetica, Arial, sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -81,4 +82,40 @@ export default {
   text-align: center;
   padding: 10px 0;
 }
+
+h1 {
+  font-size: 2.6em;
+  margin: 0;
+  font-weight: 800;
+}
+h2 {
+  font-size: 1.4em;
+  margin: 0;
+  font-weight: 300;
+}
+h3 {
+  font-size: 1.2em;
+  margin: 0;
+}
+h4 {
+  font-size: 1em;
+  margin: 0;
+}
+h5 {
+  font-size: 0.8em;
+  margin: 0;
+}
+h6 {
+  font-size: 0.6em;
+  margin: 0;
+}
+p {
+  font-size: 1em;
+  margin: 0;
+}
+text {
+  font-family: "Parkinsans", sans-serif;
+  margin: 0;
+}
+
 </style>
