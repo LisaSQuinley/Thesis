@@ -424,6 +424,13 @@ svg {
     height: auto;
 }
 
+select {
+    font-family: "Parkinsans", sans-serif;
+}
+
+option {
+    font-family: "Parkinsans", sans-serif;
+}
 
 .heatmap-cell {
     transition: fill 0.3s ease;
@@ -453,4 +460,5 @@ svg {
     padding: 8px 12px;
     border-radius: 4px;
 }
+
 </style>

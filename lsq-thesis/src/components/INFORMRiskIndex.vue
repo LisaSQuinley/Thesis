@@ -255,22 +255,34 @@ watch(chartData, (newData) => {
     </div>
 
     <div class="content">
-      <!-- Leaflet Map -->
-      <div class="map-container">
-        <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
-          <l-tile-layer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" layer-type="base"
-            attribution="OpenStreetMap | contributors: CartoDB" subdomains="abcd"></l-tile-layer>
+<!-- Leaflet Map -->
+<div class="map-container">
+  <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
+    <l-tile-layer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" layer-type="base"
+      attribution="OpenStreetMap | contributors: CartoDB" subdomains="abcd"></l-tile-layer>
 
-          <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle">
-            <template #popup="{ feature }">
-              <l-popup>
-                <strong>{{ feature.properties.name }}</strong><br>
-                Risk Level: {{ feature.properties[riskColumn.value] || "N/A" }}
-              </l-popup>
-            </template>
-          </l-geo-json>
-        </l-map>
-      </div>
+    <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle">
+      <template #popup="{ feature }">
+        <l-popup>
+          <strong>{{ feature.properties.name }}</strong><br>
+          Risk Level: {{ feature.properties[riskColumn.value] || "N/A" }}
+        </l-popup>
+      </template>
+    </l-geo-json>
+  </l-map>
+
+  <!-- 📌 Overlay message div goes here -->
+  <div v-if="riskColumn === 'inform_risk'" class="map-overlay-message">
+    <p>What is the INFORM Risk Index?
+INFORM started in 2012 when groups like the UN, charities, and researchers teamed up to better understand where disasters might happen, and which countries might need the most help.
+The INFORM Risk Index looks at which countries are most at risk of big problems—like natural disasters or conflicts—that could lead to a crisis. It focuses on three main things:
+1.	Hazards & Exposure
+2.	Vulnerability
+3.	Lack of Coping Capacity
+The goal is to use this information to plan, send help where it’s needed most, and try to stop disasters from becoming even worse.
+</p>
+  </div>
+</div>
 
       <!-- INFORM Risk Index Chart -->
       <div class="chart-container">
@@ -345,6 +357,23 @@ l-map {
 
 h3 {
   margin: 0 0 10px 0;
+}
+
+.map-container {
+  position: relative;
+}
+
+.map-overlay-message {
+  position: absolute;
+  bottom: 25px;
+  left: 10px;
+  right: 10px;
+  background-color: snow;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  z-index: 999;
 }
 
 </style>
