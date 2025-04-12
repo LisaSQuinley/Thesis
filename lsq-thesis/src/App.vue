@@ -112,6 +112,7 @@ h6 {
 p {
   font-size: 1em;
   margin: 0;
+  text-align: left;
 }
 text {
   font-family: "Parkinsans", sans-serif;
