@@ -2,29 +2,64 @@
     <div class="temperature-wrapper unified-heatmap">
       <h3>Historical + Projected Surface Air Temperature</h3>
   
-      <!-- Radio buttons for mean/max -->
-      <div>
-        <label>
-          <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
-        </label>
-        <label>
-          <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
-        </label>
+      <!-- Container for radio buttons and legend -->
+      <div class="control-container">
+        <div class="radio-buttons">
+          <label>
+            <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
+          </label>
+          <label>
+            <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
+          </label>
+        </div>
+  
+        <!-- Legend underneath the radio buttons -->
+        <div class="legend">
+          <h4>Temperature Legend</h4>
+          <div class="legend-items">
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #40E0D0;"></div>
+              <span>15°C</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #7FFF00;"></div>
+              <span>20°C</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #FFFF00;"></div>
+              <span>25°C</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #FF8000;"></div>
+              <span>30°C</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #FF0000;"></div>
+              <span>35°C</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #820747;"></div>
+              <span>40°C+</span>
+            </div>
+          </div>
+        </div>
       </div>
   
       <!-- Heatmap blocks per scenario -->
       <div v-for="column in filteredProjectedColumnOptions" :key="column" class="heatmap-block">
-  <div class="heatmap-content">
-    <div class="heatmap-description">
-      <h4>{{ getDropdownTitle(column) }}</h4>
-      <h5>{{ getDropdownSubtitle(column) }}</h5>
-      <p v-html="getProjectedMessage(column)"></p>
+        <div class="heatmap-content">
+          <div class="heatmap-description">
+            <h4>{{ getDropdownTitle(column) }}</h4>
+            <h5>{{ getDropdownSubtitle(column) }}</h5>
+            <p v-html="getProjectedMessage(column)"></p>
+          </div>
+          <svg :ref="el => heatmapRefs[column] = el"></svg>
+        </div>
+      </div>
     </div>
-    <svg :ref="el => heatmapRefs[column] = el"></svg>
-  </div>
-</div>
-</div>
   </template>
+  
+  
   
   
 
@@ -119,18 +154,34 @@ function renderUnifiedHeatmap(data, svgEl) {
 
   const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
+  // Manually render the x-axis with selective year marks
   g.append("g")
     .selectAll("text.x-axis")
-    .data(years.filter((y, i, arr) => i === 0 || i === arr.length - 1 || y % 10 === 0))
+    .data(years.filter((y, i, arr) => i === 0 || i === arr.length - 1 || y % 10 === 0)) // Show first, last, and every 10th year
     .enter()
     .append("text")
     .attr("class", "x-axis")
     .attr("x", d => xScale(d) + xScale.bandwidth() / 2)
     .attr("y", innerHeight + 20)
-//    .attr("transform", d => `rotate(-90, ${xScale(d) + xScale.bandwidth() / 2}, ${innerHeight + 25})`)
+    .attr("transform", d => `rotate(0, ${xScale(d) + xScale.bandwidth() / 2}, ${innerHeight + 20})`)
     .style("text-anchor", "middle")
     .text(d => d);
 
+  // Manually add tick marks (small vertical lines at the years)
+  g.append("g")
+    .selectAll("line.x-axis-tick")
+    .data(years.filter((y, i, arr) => i === 0 || i === arr.length - 1 || y % 10 === 0)) // Select the same years as above
+    .enter()
+    .append("line")
+    .attr("class", "x-axis-tick")
+    .attr("x1", d => xScale(d) + xScale.bandwidth() / 2)  // Position ticks at the same locations as the labels
+    .attr("x2", d => xScale(d) + xScale.bandwidth() / 2)
+    .attr("y1", innerHeight)  // Ticks will be at the bottom of the heatmap
+    .attr("y2", innerHeight + 6) // Length of the ticks
+    .style("stroke", "black")
+    .style("stroke-width", 1);
+
+  // Add the y-axis labels
   g.append("g")
     .selectAll("text.y-axis")
     .data(months)
@@ -138,10 +189,11 @@ function renderUnifiedHeatmap(data, svgEl) {
     .append("text")
     .attr("class", "y-axis")
     .attr("x", -25)
-    .attr("y", d => yScale(d) + yScale.bandwidth() / 1.5)
+    .attr("y", d => yScale(d) + yScale.bandwidth() / 1.25)
     .style("text-anchor", "middle")
     .text(d => d);
 
+  // Create the heatmap cells
   g.selectAll(".heatmap-cell")
     .data(data)
     .enter()
@@ -157,6 +209,8 @@ function renderUnifiedHeatmap(data, svgEl) {
     .duration(500)
     .style("opacity", 1);
 }
+
+
 
   
   onMounted(async () => {
@@ -229,20 +283,49 @@ const getDropdownSubtitle = (columnName) => {
 
 <style scoped>
 .temperature-wrapper {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.mean-max-temperature {
-    width: 100%;
+.control-container {
+  display: flex;
+  flex-direction: column; /* Stack radio buttons and legend vertically */
+  align-items: center;
 }
 
-.historical-temperature,
-.projected-temperature {
-    width: 100%;
-    /* Keep full width inside their containers */
+.radio-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.legend {
+  margin-top: 10px; /* Add some space between radio buttons and legend */
+}
+
+.legend-items {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start;
+  margin-top: 5px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-color {
+  width: 30px;
+  height: 30px;
+}
+
+svg {
+  flex: 1;
+  width: 100%;
+  height: auto;
 }
 
 .heatmap-block {
@@ -260,32 +343,17 @@ const getDropdownSubtitle = (columnName) => {
   max-width: 250px;
 }
 
-svg {
-  flex: 1;
-  width: 100%;
-  height: auto;
-}
-
-
-select {
-    font-family: "Parkinsans", sans-serif;
-}
-
-option {
-    font-family: "Parkinsans", sans-serif;
-}
-
 .heatmap-cell {
-    transition: fill 0.3s ease;
+  transition: fill 0.3s ease;
 }
 
 .x-axis {
-    font-size: 0.75em;
-    text-align: right;
+  font-size: 0.75em;
+  text-align: right;
 }
 
 .y-axis {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 p {
@@ -293,5 +361,4 @@ p {
   margin: 0;
   text-align: left;
 }
-
 </style>
