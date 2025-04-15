@@ -56,6 +56,11 @@ function renderPrecipitationCircles(combinedData, svgEl) {
     .domain([0, maxCircles])
     .range([innerHeight, 0]);
 
+    const yValue = d3.scaleLinear()
+  .domain([0, maxValue])
+  .range([innerHeight, 0]);
+
+
   const color = d3.scaleOrdinal()
     .domain(["historical", "projected"])
     .range(["#089c9d", "#40E0D0"]);
@@ -77,25 +82,99 @@ function renderPrecipitationCircles(combinedData, svgEl) {
   });
 
   g.append("g")
-    .attr("transform", `translate(0,${innerHeight})`)
-    .call(d3.axisBottom(x).tickValues(years.filter(y => y % 10 === 0)));
+  .attr("transform", `translate(0,${innerHeight})`)
+  .call(d3.axisBottom(x).tickValues(years.filter(y => y % 10 === 0)))
+  .call(g => g.select("path").remove()); // Remove the horizontal axis line
 
   g.append("g")
-    .call(d3.axisLeft(y).tickFormat(d => d * 20));
+  .call(d3.axisLeft(yValue).ticks(5).tickFormat(d => d.toFixed(0)))
+  .call(g => {
+    g.select("path").remove(); // remove axis line
+    g.selectAll(".tick").filter((d, i) => i === 0).remove(); // remove first tick
+  });
 
-  g.selectAll("text.bar-label")
-    .data(combinedData)
-    .enter()
-    .append("text")
-    .attr("class", "bar-label")
-    .attr("x", d => x(d.year) + x.bandwidth() / 2)
-    .attr("y", d => y(Math.floor(d.value / 20)) - 10)
-    .attr("text-anchor", "middle")
-    .attr("font-size", "10px")
-    .attr("fill", "#333")
-    .text(d => d.value.toFixed(1));
+
+// Add value labels and hide them initially
+g.selectAll(".bar-label")
+  .data(combinedData)
+  .enter()
+  .append("text")
+  .attr("class", "bar-label")
+  .attr("x", d => x(d.year) + x.bandwidth() / 2)  // Center the label on the bar
+  .attr("y", d => y(Math.floor(d.value / 20)) - 10)  // Position the label above the ellipses
+  .attr("text-anchor", "middle")
+  .attr("font-size", "10px")
+  .attr("fill", "#333")
+  .attr("opacity", 0) // Ensure labels are initially hidden
+  .text(d => d.value.toFixed(1));
+
+// Create the hover bar (start it off as hidden and position it dynamically later)
+const hoverBar = g.append("rect")
+  .attr("class", "hover-bar")
+  .attr("width", x.bandwidth())
+  .attr("fill-opacity", 0.7)
+  .style("display", "none")  // Initially hidden
+  .attr("y", innerHeight)   // Start at the bottom
+  .attr("height", 0);       // Start with no height
+
+// Add hover effect with animation
+g.selectAll(".hover-zone")
+  .data(combinedData)
+  .enter()
+  .append("rect")
+  .attr("class", "hover-zone")
+  .attr("x", d => x(d.year))  // Correct x-position based on the year
+  .attr("y", 0)
+  .attr("width", x.bandwidth())
+  .attr("height", innerHeight)
+  .attr("fill", "transparent")
+  .on("mouseover", function (event, d) {
+    // Cancel any ongoing transitions before starting a new one
+    hoverBar.interrupt();
+
+    // Determine the color based on the data source
+    const hoverColor = color(d.source); // "historical" or "projected"
+
+    // Show and animate the hover bar
+    hoverBar
+      .style("display", "block") // Make the bar visible
+      .transition()  // Start a transition
+      .duration(500) // Duration of the animation (500ms)
+      .ease(d3.easeCubicOut) // Ease function for smoothness
+      .attr("x", x(d.year)) // Ensure hover bar is at the correct x (year position)
+      .attr("y", yValue(d.value)) // Animate to the top position based on value
+      .attr("height", innerHeight - yValue(d.value)) // Animate to the correct height
+      .attr("fill", hoverColor); // Set the hover bar's color to match ellipses
+
+    // Show the value label for the hovered bar
+    g.selectAll(".bar-label")
+      .filter(label => label.year === d.year)  // Find the label for the current year
+      .transition()
+      .duration(500)
+      .attr("opacity", 1); // Make the label visible
+  })
+  .on("mouseout", function () {
+    // Cancel any ongoing transitions before starting a new one
+    hoverBar.interrupt();
+
+    // Hide and reset the hover bar
+    hoverBar
+      .transition() // Start a transition
+      .duration(500) // Duration of the animation (500ms)
+      .ease(d3.easeCubicOut) // Ease function for smoothness
+      .attr("y", innerHeight) // Move the bar back to the bottom
+      .attr("height", 0) // Shrink the bar to zero height
+      .style("display", "none"); // Hide the bar after the transition
+
+    // Hide the value label for the bar after hover
+    g.selectAll(".bar-label")
+      .transition()
+      .duration(500)
+      .attr("opacity", 0); // Make the label invisible
+  });
+
+
 }
-
 
 
 

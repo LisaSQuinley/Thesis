@@ -1,98 +1,111 @@
 <template>
-    <div class="temperature-wrapper unified-heatmap">
-      <h3>Historical + Projected Surface Air Temperature</h3>
-  
-      <!-- Container for radio buttons and legend -->
-      <div class="control-container">
-        <div class="radio-buttons">
-          <label>
-            <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
-          </label>
-          <label>
-            <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
-          </label>
-        </div>
-  
-        <!-- Legend underneath the radio buttons -->
-        <div class="legend">
-          <h4>Temperature Legend</h4>
-          <div class="legend-items">
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: #40E0D0;"></div>
-              <span>15°C</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: #7FFF00;"></div>
-              <span>20°C</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: #FFFF00;"></div>
-              <span>25°C</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: #FF8000;"></div>
-              <span>30°C</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: #FF0000;"></div>
-              <span>35°C</span>
-            </div>
-            <div class="legend-item">
-              <div class="legend-color" style="background-color: #820747;"></div>
-              <span>40°C+</span>
-            </div>
-          </div>
-        </div>
+  <div class="temperature-wrapper unified-heatmap">
+    <h3>Historical + Projected Surface Air Temperature</h3>
+
+    <!-- Container for radio buttons and legend -->
+    <div class="control-container">
+      <div class="radio-buttons">
+        <label>
+          <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
+        </label>
+        <label>
+          <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
+        </label>
       </div>
-  
-      <!-- Heatmap blocks per scenario -->
-      <div v-for="column in filteredProjectedColumnOptions" :key="column" class="heatmap-block">
-        <div class="heatmap-content">
-          <div class="heatmap-description">
-            <h4>{{ getDropdownTitle(column) }}</h4>
-            <h5>{{ getDropdownSubtitle(column) }}</h5>
-            <p v-html="getProjectedMessage(column)"></p>
+
+      <!-- Legend underneath the radio buttons -->
+      <div class="legend">
+        <h4>Temperature Legend</h4>
+        <div class="legend-items">
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: #40E0D0;"></div>
+            <span>15°C</span>
           </div>
-          <svg :ref="el => heatmapRefs[column] = el"></svg>
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: #7FFF00;"></div>
+            <span>20°C</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: #FFFF00;"></div>
+            <span>25°C</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: #FF8000;"></div>
+            <span>30°C</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: #FF0000;"></div>
+            <span>35°C</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: #820747;"></div>
+            <span>40°C+</span>
+          </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  
-  
-  
+
+    <!-- Heatmap blocks per scenario -->
+    <div
+  v-for="column in filteredProjectedColumnOptions"
+  :key="column"
+  class="heatmap-block"
+  @mouseenter="hoveredBlock = column"
+  @mouseleave="hoveredBlock = null"
+>
+  <div class="heatmap-content">
+    <div class="heatmap-description">
+      <h4>{{ getDropdownTitle(column) }}</h4>
+      <h5>{{ getDropdownSubtitle(column) }}</h5>
+      <p v-if="hoveredBlock === column" v-html="getProjectedMessage(column)"></p>
+      <p v-else>{{ getShortScenarioMessage(column) }}</p>
+    </div>
+    <div class="heatmap-visual">
+      <div class="heatmap-overlay"></div>
+      <svg :ref="el => heatmapRefs[column] = el"></svg>
+    </div>
+  </div>
+</div>
+
+  </div>
+</template>
 
 
-  <script setup>
-  import * as d3 from "d3";
-  import { ref, onMounted, onBeforeUnmount, nextTick, computed, watch } from "vue";
-  
-  const heatmapRefs = {}; // dynamic refs by column
-  
-  const historicalData = ref([]);
-  const projectedData = ref([]);
-  const projectedColumns = ref([]);
-  
-  const selectedColumnGroup = ref("max");
-  const selectedProjectedColumn = ref("");
-  
-  const filteredProjectedColumnOptions = computed(() =>
-    projectedColumns.value.filter(col =>
-      selectedColumnGroup.value === "mean"
-        ? col.toLowerCase().includes("mean")
-        : col.toLowerCase().includes("max")
-    )
-  );
-  
-  watch(selectedColumnGroup, () => {
-    const filtered = filteredProjectedColumnOptions.value;
-    selectedProjectedColumn.value = filtered.length > 0 ? filtered[0] : "";
-  });
-  
-  //const unifiedData = ref([]);
-  
-  watch(
+
+
+
+
+<script setup>
+import * as d3 from "d3";
+import { ref, onMounted, onBeforeUnmount, nextTick, computed, watch } from "vue";
+
+const heatmapRefs = {}; // dynamic refs by column
+const hoveredBlock = ref(null);
+
+
+const historicalData = ref([]);
+const projectedData = ref([]);
+const projectedColumns = ref([]);
+
+const selectedColumnGroup = ref("max");
+const selectedProjectedColumn = ref("");
+
+const filteredProjectedColumnOptions = computed(() =>
+  projectedColumns.value.filter(col =>
+    selectedColumnGroup.value === "mean"
+      ? col.toLowerCase().includes("mean")
+      : col.toLowerCase().includes("max")
+  )
+);
+
+watch(selectedColumnGroup, () => {
+  const filtered = filteredProjectedColumnOptions.value;
+  selectedProjectedColumn.value = filtered.length > 0 ? filtered[0] : "";
+});
+
+//const unifiedData = ref([]);
+
+watch(
   [historicalData, projectedData, selectedColumnGroup],
   async () => {
     if (!historicalData.value.length || !projectedData.value.length) return;
@@ -123,7 +136,7 @@
   { immediate: true }
 );
 
-  
+
 function renderUnifiedHeatmap(data, svgEl) {
   if (!svgEl || !data.length) return;
 
@@ -212,33 +225,33 @@ function renderUnifiedHeatmap(data, svgEl) {
 
 
 
-  
-  onMounted(async () => {
-    try {
-      const hist = await d3.csv("./data/MeanMaxSurfaceAirTempuratureAndPrecipitation-1951-2020-Month.csv");
-      const proj = await d3.csv("./data/AverageMeanAndMaxSurfaceAirTemperatureAndPrecipitation-2020-2099-Month-FourScenarios.csv");
-  
-      historicalData.value = hist;
-      projectedData.value = proj;
-      projectedColumns.value = Object.keys(proj[0] || {});
-  
-      const defaultGroup = selectedColumnGroup.value;
-      const defaultOptions = projectedColumns.value.filter(col =>
-        defaultGroup === "mean" ? col.toLowerCase().includes("mean") : col.toLowerCase().includes("max")
-      );
-      selectedProjectedColumn.value = defaultOptions[0];
-  
-      window.addEventListener("resize", renderUnifiedHeatmap);
-    } catch (err) {
-      console.error("Error loading CSV data:", err);
-    }
-  });
-  
-  onBeforeUnmount(() => {
-    window.removeEventListener("resize", renderUnifiedHeatmap);
-  });
 
-  const getProjectedMessage = (columnName) => {
+onMounted(async () => {
+  try {
+    const hist = await d3.csv("./data/MeanMaxSurfaceAirTempuratureAndPrecipitation-1951-2020-Month.csv");
+    const proj = await d3.csv("./data/AverageMeanAndMaxSurfaceAirTemperatureAndPrecipitation-2020-2099-Month-FourScenarios.csv");
+
+    historicalData.value = hist;
+    projectedData.value = proj;
+    projectedColumns.value = Object.keys(proj[0] || {});
+
+    const defaultGroup = selectedColumnGroup.value;
+    const defaultOptions = projectedColumns.value.filter(col =>
+      defaultGroup === "mean" ? col.toLowerCase().includes("mean") : col.toLowerCase().includes("max")
+    );
+    selectedProjectedColumn.value = defaultOptions[0];
+
+    window.addEventListener("resize", renderUnifiedHeatmap);
+  } catch (err) {
+    console.error("Error loading CSV data:", err);
+  }
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", renderUnifiedHeatmap);
+});
+
+const getProjectedMessage = (columnName) => {
   if (columnName.includes("SSP1-2.6")) {
     return "Aiming high on sustainability, this scenario sees the world making strong progress on cutting emissions, hitting net-zero after 2050. The result? Global warming is likely kept below 2°C by 2100. It’s the climate-friendly path.";
   } else if (columnName.includes("SSP2-4.5")) {
@@ -253,31 +266,46 @@ function renderUnifiedHeatmap(data, svgEl) {
 };
 
 const getDropdownSubtitle = (columnName) => {
-    if (columnName.includes("SSP1-2.6")) {
-        return "SSP1-2.6: Best-Case Scenario";
-    } else if (columnName.includes("SSP2-4.5")) {
-        return "SSP2-4.5: Business-as-Usual Scenario";
-    } else if (columnName.includes("SSP3-7.0")) {
-        return "SSP3-7.0: Worsening Scenario";
-    } else if (columnName.includes("SSP5-8.5")) {
-        return "SSP5-8.5: Worst-Case Scenario";
-    }
-    return columnName;
-  };
-  
-  const getDropdownTitle = (columnName) => {
-    if (columnName.includes("SSP1-2.6")) {
-        return "🌱 Green Leap";
-    } else if (columnName.includes("SSP2-4.5")) {
-        return "🌍 Middle Ground";
-    } else if (columnName.includes("SSP3-7.0")) {
-        return "🔥 Divided Drift";
-    } else if (columnName.includes("SSP5-8.5")) {
-        return "💣 Turbocharged Trouble";
-    }
-    return columnName;
-  };
-  </script>
+  if (columnName.includes("SSP1-2.6")) {
+    return "SSP1-2.6: Best-Case Scenario";
+  } else if (columnName.includes("SSP2-4.5")) {
+    return "SSP2-4.5: Business-as-Usual Scenario";
+  } else if (columnName.includes("SSP3-7.0")) {
+    return "SSP3-7.0: Worsening Scenario";
+  } else if (columnName.includes("SSP5-8.5")) {
+    return "SSP5-8.5: Worst-Case Scenario";
+  }
+  return columnName;
+};
+
+const getDropdownTitle = (columnName) => {
+  if (columnName.includes("SSP1-2.6")) {
+    return "🌱 Green Leap";
+  } else if (columnName.includes("SSP2-4.5")) {
+    return "🌍 Middle Ground";
+  } else if (columnName.includes("SSP3-7.0")) {
+    return "🔥 Divided Drift";
+  } else if (columnName.includes("SSP5-8.5")) {
+    return "💣 Turbocharged Trouble";
+  }
+  return columnName;
+};
+
+const getShortScenarioMessage = (columnName) => {
+  if (columnName.includes("SSP1-2.6")) {
+    return "🌱 Possible, but unlikely without major shifts.";
+  } else if (columnName.includes("SSP2-4.5")) {
+    return "🌍 Most likely if trends hold steady.";
+  } else if (columnName.includes("SSP3-7.0")) {
+    return "🔥 Growing risk amid global tensions.";
+  } else if (columnName.includes("SSP5-8.5")) {
+    return "💣 Less likely, but still on the table.";
+  }
+  return "❓ Likelihood unknown.";
+};
+
+
+</script>
 
 
 
@@ -291,7 +319,8 @@ const getDropdownSubtitle = (columnName) => {
 
 .control-container {
   display: flex;
-  flex-direction: column; /* Stack radio buttons and legend vertically */
+  flex-direction: column;
+  /* Stack radio buttons and legend vertically */
   align-items: center;
 }
 
@@ -301,7 +330,8 @@ const getDropdownSubtitle = (columnName) => {
 }
 
 .legend {
-  margin-top: 10px; /* Add some space between radio buttons and legend */
+  margin-top: 10px;
+  /* Add some space between radio buttons and legend */
 }
 
 .legend-items {
@@ -330,6 +360,7 @@ svg {
 
 .heatmap-block {
   width: 100%;
+  padding: 5px;
 }
 
 .heatmap-content {
@@ -361,4 +392,33 @@ p {
   margin: 0;
   text-align: left;
 }
+
+.heatmap-visual {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  filter: grayscale(100%);
+  transition: filter 0.3s ease;
+}
+
+.heatmap-visual:hover {
+  filter: grayscale(0%);
+}
+
+.heatmap-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  /* Optional: Use this for a subtle dark overlay */
+  background-color: rgba(255, 255, 255, 0);
+  pointer-events: none;
+}
+
+.heatmap-description p {
+  transition: opacity 0.3s ease;
+}
+
 </style>
