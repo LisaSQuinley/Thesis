@@ -34,11 +34,11 @@ function renderPrecipitationCircles(combinedData, svgEl) {
   const height = container.getBoundingClientRect().height;
 
   const svg = d3.select(svgEl)
-    .attr("width", width)  // Update width based on container size
-    .attr("height", height) // Update height based on container size
+    .attr("width", width)
+    .attr("height", height)
     .attr("viewBox", `0 0 ${width} ${height}`);
-  
-  svg.selectAll("*").remove(); // Clear previous chart
+
+  svg.selectAll("*").remove();
 
   const margin = { top: 20, right: 20, bottom: 60, left: 60 };
   const innerWidth = width - margin.left - margin.right;
@@ -49,132 +49,128 @@ function renderPrecipitationCircles(combinedData, svgEl) {
   const years = Array.from(new Set(combinedData.map(d => d.year))).sort((a, b) => a - b);
   const x = d3.scaleBand().domain(years).range([0, innerWidth]).padding(0.1);
 
+  const ellipseMinHeight = 14;
+  const maxEllipsesVisible = Math.floor(innerHeight / ellipseMinHeight);
   const maxValue = d3.max(combinedData, d => d.value);
-  const maxCircles = Math.ceil(maxValue / 20);
+
+  const unitPerEllipse = maxValue / maxEllipsesVisible;
 
   const y = d3.scaleLinear()
-    .domain([0, maxCircles])
+    .domain([0, maxEllipsesVisible])
     .range([innerHeight, 0]);
 
-    const yValue = d3.scaleLinear()
-  .domain([0, maxValue])
-  .range([innerHeight, 0]);
-
+  const yValue = d3.scaleLinear()
+    .domain([0, maxValue])
+    .range([innerHeight, 0]);
 
   const color = d3.scaleOrdinal()
     .domain(["historical", "projected"])
     .range(["#089c9d", "#40E0D0"]);
 
   combinedData.forEach(d => {
-    const totalCircles = Math.floor(d.value / 20);
+    const totalCircles = Math.floor(d.value / unitPerEllipse); // This rounds down to ensure it's a whole number
     const barCenter = x(d.year) + x.bandwidth() / 2;
     const ellipseRx = Math.min(x.bandwidth() / 3, 12);
     const ellipseRy = ellipseRx;
 
     for (let i = 0; i < totalCircles; i++) {
+      const randomYOffset = Math.random() * 100 + 20;
+      const randomDelay = Math.random() * 800;
+
       g.append("ellipse")
         .attr("cx", barCenter)
-        .attr("cy", y(i + 1))
+        .attr("cy", -randomYOffset)
         .attr("rx", ellipseRx)
         .attr("ry", ellipseRy)
-        .attr("fill", color(d.source));
+        .attr("fill", color(d.source))
+        .transition()
+        .delay(randomDelay)
+        .duration(600)
+        .ease(d3.easeBounceOut)
+        .attr("cy", y(i + 1));
     }
   });
 
   g.append("g")
-  .attr("transform", `translate(0,${innerHeight})`)
-  .call(d3.axisBottom(x).tickValues(years.filter(y => y % 10 === 0)))
-  .call(g => g.select("path").remove()); // Remove the horizontal axis line
+    .attr("transform", `translate(0,${innerHeight})`)
+    .call(d3.axisBottom(x).tickValues(years.filter(y => y % 10 === 0)))
+    .call(g => g.select("path").remove());
 
   g.append("g")
-  .call(d3.axisLeft(yValue).ticks(5).tickFormat(d => d.toFixed(0)))
-  .call(g => {
-    g.select("path").remove(); // remove axis line
-    g.selectAll(".tick").filter((d, i) => i === 0).remove(); // remove first tick
-  });
+    .call(d3.axisLeft(yValue).ticks(5).tickFormat(d => d.toFixed(0)))
+    .call(g => {
+      g.select("path").remove();
+      g.selectAll(".tick").filter((d, i) => i === 0).remove();
+    });
 
+  const hoverBar = g.append("rect")
+    .attr("class", "hover-bar")
+    .attr("width", x.bandwidth())
+    .attr("fill-opacity", 0.7)
+    .style("display", "none")
+    .attr("y", innerHeight)
+    .attr("height", 0);
 
-// Add value labels and hide them initially
-g.selectAll(".bar-label")
-  .data(combinedData)
-  .enter()
-  .append("text")
-  .attr("class", "bar-label")
-  .attr("x", d => x(d.year) + x.bandwidth() / 2)  // Center the label on the bar
-  .attr("y", d => y(Math.floor(d.value / 20)) - 10)  // Position the label above the ellipses
-  .attr("text-anchor", "middle")
-  .attr("font-size", "10px")
-  .attr("fill", "#333")
-  .attr("opacity", 0) // Ensure labels are initially hidden
-  .text(d => d.value.toFixed(1));
+  g.selectAll(".hover-zone")
+    .data(combinedData)
+    .enter()
+    .append("rect")
+    .attr("class", "hover-zone")
+    .attr("x", d => x(d.year))
+    .attr("y", 0)
+    .attr("width", x.bandwidth())
+    .attr("height", innerHeight)
+    .attr("fill", "transparent")
+    .on("mouseover", function (event, d) {
+      hoverBar.interrupt();
 
-// Create the hover bar (start it off as hidden and position it dynamically later)
-const hoverBar = g.append("rect")
-  .attr("class", "hover-bar")
-  .attr("width", x.bandwidth())
-  .attr("fill-opacity", 0.7)
-  .style("display", "none")  // Initially hidden
-  .attr("y", innerHeight)   // Start at the bottom
-  .attr("height", 0);       // Start with no height
+      const hoverColor = color(d.source);
 
-// Add hover effect with animation
-g.selectAll(".hover-zone")
-  .data(combinedData)
-  .enter()
-  .append("rect")
-  .attr("class", "hover-zone")
-  .attr("x", d => x(d.year))  // Correct x-position based on the year
-  .attr("y", 0)
-  .attr("width", x.bandwidth())
-  .attr("height", innerHeight)
-  .attr("fill", "transparent")
-  .on("mouseover", function (event, d) {
-    // Cancel any ongoing transitions before starting a new one
-    hoverBar.interrupt();
+      hoverBar
+        .style("display", "block")
+        .transition()
+        .duration(500)
+        .ease(d3.easeCubicOut)
+        .attr("x", x(d.year))
+        .attr("y", yValue(d.value))
+        .attr("height", innerHeight - yValue(d.value))
+        .attr("fill", hoverColor);
 
-    // Determine the color based on the data source
-    const hoverColor = color(d.source); // "historical" or "projected"
+      // Remove existing labels
+      g.selectAll(".bar-label").remove();
 
-    // Show and animate the hover bar
-    hoverBar
-      .style("display", "block") // Make the bar visible
-      .transition()  // Start a transition
-      .duration(500) // Duration of the animation (500ms)
-      .ease(d3.easeCubicOut) // Ease function for smoothness
-      .attr("x", x(d.year)) // Ensure hover bar is at the correct x (year position)
-      .attr("y", yValue(d.value)) // Animate to the top position based on value
-      .attr("height", innerHeight - yValue(d.value)) // Animate to the correct height
-      .attr("fill", hoverColor); // Set the hover bar's color to match ellipses
+      // Add new label
+      g.append("text")
+        .attr("class", "bar-label")
+        .attr("x", x(d.year) + x.bandwidth() / 2)
+        .attr("y", yValue(d.value) - 10)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#333")
+        .attr("opacity", 0)
+        .text(d.value.toFixed(1))
+        .transition()
+        .duration(500)
+        .attr("opacity", 1);
+    })
+    .on("mouseout", function () {
+      hoverBar.interrupt();
 
-    // Show the value label for the hovered bar
-    g.selectAll(".bar-label")
-      .filter(label => label.year === d.year)  // Find the label for the current year
-      .transition()
-      .duration(500)
-      .attr("opacity", 1); // Make the label visible
-  })
-  .on("mouseout", function () {
-    // Cancel any ongoing transitions before starting a new one
-    hoverBar.interrupt();
+      hoverBar
+        .transition()
+        .duration(500)
+        .ease(d3.easeCubicOut)
+        .attr("y", innerHeight)
+        .attr("height", 0)
+        .style("display", "none");
 
-    // Hide and reset the hover bar
-    hoverBar
-      .transition() // Start a transition
-      .duration(500) // Duration of the animation (500ms)
-      .ease(d3.easeCubicOut) // Ease function for smoothness
-      .attr("y", innerHeight) // Move the bar back to the bottom
-      .attr("height", 0) // Shrink the bar to zero height
-      .style("display", "none"); // Hide the bar after the transition
-
-    // Hide the value label for the bar after hover
-    g.selectAll(".bar-label")
-      .transition()
-      .duration(500)
-      .attr("opacity", 0); // Make the label invisible
-  });
-
-
+      g.selectAll(".bar-label")
+        .transition()
+        .duration(300)
+        .attr("opacity", 0)
+        .remove();
+    });
 }
+
 
 
 
@@ -235,27 +231,27 @@ onMounted(async () => {
     projectedColumns.value = Object.keys(proj[0] || {});
 
     let resizeTimeout;
-window.addEventListener("resize", () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    for (const column of filteredPrecipitationColumns.value) {
-      const combinedData = [
-        ...historicalData.value.map(d => ({
-          year: +d.year,
-          value: parseFloat(d["Precipitation"]),
-          source: "historical"
-        })).filter(d => !isNaN(d.value)),
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        for (const column of filteredPrecipitationColumns.value) {
+          const combinedData = [
+            ...historicalData.value.map(d => ({
+              year: +d.year,
+              value: parseFloat(d["Precipitation"]),
+              source: "historical"
+            })).filter(d => !isNaN(d.value)),
 
-        ...projectedData.value.map(d => ({
-          year: +d.year,
-          value: parseFloat(d[column]),
-          source: "projected"
-        })).filter(d => !isNaN(d.value))
-      ];
-      renderPrecipitationCircles(combinedData, chartRefs[column]);
-    }
-  }, 200); // Adjust delay for performance (e.g., 200ms)
-});
+            ...projectedData.value.map(d => ({
+              year: +d.year,
+              value: parseFloat(d[column]),
+              source: "projected"
+            })).filter(d => !isNaN(d.value))
+          ];
+          renderPrecipitationCircles(combinedData, chartRefs[column]);
+        }
+      }, 200); // Adjust delay for performance (e.g., 200ms)
+    });
   } catch (err) {
     console.error("Error loading CSV data:", err);
   }
@@ -263,29 +259,46 @@ window.addEventListener("resize", () => {
 </script>
 
 <style scoped>
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .rainfaill-precipitation {
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
   width: 100%;
+  height: 100%;
+}
+
+.precip-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Full viewport height */
+  box-sizing: border-box;
+  padding: 1rem;
 }
 
 .bar-chart {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
 }
+
 
 .bar-chart-block {
   width: 100%;
+  height: 100%;
 }
 
 .bar-chart-content {
   width: 100%;
-  height: 300px;
-  /* set a fixed height or adjust dynamically */
+  height: 100%; /* or use a percentage based on parent */
 }
+
 
 svg {
   width: 100%;
@@ -295,4 +308,5 @@ svg {
 h3 {
   width: 100%;
 }
+
 </style>

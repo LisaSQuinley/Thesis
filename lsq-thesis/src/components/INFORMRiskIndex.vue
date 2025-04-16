@@ -299,44 +299,42 @@ The goal is to use this information to plan, send help where it’s needed most,
 .container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  height: 100%; /* Fill the height of parent instead of viewport */
   width: 100%;
+  box-sizing: border-box; /* Respect parent padding if any */
 }
+
 
 .main-title {
   text-align: center;
-  margin-bottom: 10px;
-  width: 100%;
-}
-
-.filter-controls {
-  margin: 0 0 10px 0;
-  text-align: center;
-}
-
-/* Sorting Controls */
-.sort-controls {
   margin: 10px 0;
+}
+
+.filter-controls,
+.sort-controls {
   text-align: center;
+  margin: 5px 0;
 }
 
 .content {
+  flex: 1; /* Take up the remaining space */
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  height: 700px;
+  align-items: stretch;
   width: 100%;
+  overflow: hidden; /* Prevent content from spilling */
 }
 
 /* Map container */
 .map-container {
   width: 50%;
   height: 100%;
+  position: relative;
 }
 
 l-map {
-  height: 100%;
   width: 100%;
+  height: 100%;
 }
 
 /* Chart container */
@@ -345,6 +343,7 @@ l-map {
   height: 100%;
   overflow-y: auto;
 }
+
 
 #INFORM-chart {
   width: 100%;
