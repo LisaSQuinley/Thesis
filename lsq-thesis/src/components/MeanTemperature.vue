@@ -309,6 +309,7 @@ const getShortScenarioMessage = (columnName) => {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding: 4rem 5rem 5rem 5rem;
 }
 
 .control-container {

@@ -302,6 +302,7 @@ The goal is to use this information to plan, send help where it’s needed most,
   height: 100%; /* Fill the height of parent instead of viewport */
   width: 100%;
   box-sizing: border-box; /* Respect parent padding if any */
+  padding: 4rem 5rem 5rem 5rem;
 }
 
 

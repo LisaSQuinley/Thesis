@@ -1,10 +1,12 @@
 <template>
-  <div class="precip-wrapper bar-chart">
+  <div class="precip-wrapper bar-chart" ref="precipWrapperRef">
     <h3>Historical + Projected Precipitation</h3>
-
     <div v-for="column in filteredPrecipitationColumns" :key="column" class="bar-chart-block">
       <div class="bar-chart-content">
         <h4>{{ getDropdownTitle(column) }}</h4>
+        <div class="legend">
+          <svg :ref="el => legendRefs[column] = el" height="40"></svg>
+        </div>
         <svg :ref="el => chartRefs[column] = el"></svg>
       </div>
     </div>
@@ -15,18 +17,111 @@
 import * as d3 from "d3";
 import { ref, onMounted, nextTick, computed, watch } from "vue";
 
+const precipWrapperRef = ref(null);
 const chartRefs = {};
+const legendRefs = {};
 const historicalData = ref([]);
 const projectedData = ref([]);
 const projectedColumns = ref([]);
 
 const filteredPrecipitationColumns = computed(() =>
   projectedColumns.value.filter(col =>
-    col.toLowerCase().includes("precipitation") && col.includes("8.5") // Only show 8.5 scenario columns
+    col.toLowerCase().includes("precipitation") && col.includes("8.5")
   )
 );
 
-function renderPrecipitationCircles(combinedData, svgEl) {
+function getDropdownTitle(col) {
+  return col.replace(/_/g, " ");
+}
+
+onMounted(() => {
+  if (precipWrapperRef.value) {
+    observer.observe(precipWrapperRef.value);
+  }
+});
+
+// Intersection Observer setup to trigger animation
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        // Trigger animation when the component is in view
+        entry.target.classList.add("in-view");
+
+        // Trigger the animation of the precipitation circles
+        triggerPrecipitationAnimation();
+      } else {
+        // Optionally, remove animation class if it's out of view
+        entry.target.classList.remove("in-view");
+      }
+    });
+  },
+  { threshold: 0.5 } // Trigger when 50% of the component is in view
+);
+
+function triggerPrecipitationAnimation() {
+  filteredPrecipitationColumns.value.forEach(column => {
+    // Retrieve the data for this column
+    const historical = historicalData.value.map(d => ({
+      year: +d.year,
+      value: Math.round(parseFloat(d["Precipitation"])),
+      source: "historical"
+    })).filter(d => !isNaN(d.value));
+
+    const projected = projectedData.value
+      .filter(d => +d.year !== 2020)
+      .map(d => ({
+        year: +d.year,
+        value: Math.round(parseFloat(d[column])),
+        source: "projected"
+      })).filter(d => !isNaN(d.value));
+
+    const combinedRaw = [...historical, ...projected];
+    const combinedData = getYearlySums(combinedRaw);
+
+    // Calculate unit per ellipse
+    const maxValue = d3.max(combinedData, d => d.value);
+    const ellipseMinHeight = 14;
+    const chartHeight = chartRefs[column]?.parentNode?.getBoundingClientRect().height || 400;
+    const maxEllipsesVisible = Math.floor((chartHeight - 80) / ellipseMinHeight);
+    const unitPerEllipse = maxValue / maxEllipsesVisible;
+
+    // Render the precipitation circles
+    renderPrecipitationCircles(combinedData, chartRefs[column], column, unitPerEllipse);
+  });
+}
+
+
+function renderLegend(unitPerEllipse, svgEl) {
+  const svg = d3.select(svgEl);
+  svg.selectAll("*").remove();
+
+  const dropSize = 10;
+  const dropWidth = dropSize;
+  const dropHeight = dropSize * 1.3;
+  const centerX = 20;
+  const centerY = 25;
+
+  const path = d3.path();
+  path.moveTo(0, -dropHeight / 2);
+  path.bezierCurveTo(dropWidth / 2, -dropHeight / 2, dropWidth / 2, dropHeight / 4, 0, dropHeight / 2);
+  path.bezierCurveTo(-dropWidth / 2, dropHeight / 4, -dropWidth / 2, -dropHeight / 2, 0, -dropHeight / 2);
+
+  svg.append("path")
+    .attr("d", path.toString())
+    .attr("transform", `translate(${centerX}, ${centerY}) scale(1, -1)`)
+    .attr("fill", "#089c9d");
+
+  svg.append("text")
+    .attr("x", centerX + 15)
+    .attr("y", centerY + 5)
+    .attr("fill", "#333")
+    .attr("font-size", "12px")
+    .text(`1 raindrop = ${Math.round(unitPerEllipse)} mm`);
+}
+
+
+function renderPrecipitationCircles(combinedData, svgEl, column, unitPerEllipse) {
   if (!svgEl || !combinedData.length) return;
 
   const container = svgEl.parentNode;
@@ -52,42 +147,42 @@ function renderPrecipitationCircles(combinedData, svgEl) {
   const ellipseMinHeight = 14;
   const maxEllipsesVisible = Math.floor(innerHeight / ellipseMinHeight);
   const maxValue = d3.max(combinedData, d => d.value);
+  unitPerEllipse = maxValue / maxEllipsesVisible;
 
-  const unitPerEllipse = maxValue / maxEllipsesVisible;
+  const y = d3.scaleLinear().domain([0, maxEllipsesVisible]).range([innerHeight, 0]);
+  const yValue = d3.scaleLinear().domain([0, maxValue]).range([innerHeight, 0]);
 
-  const y = d3.scaleLinear()
-    .domain([0, maxEllipsesVisible])
-    .range([innerHeight, 0]);
+  const color = d3.scaleOrdinal().domain(["historical", "projected"]).range(["#089c9d", "#40E0D0"]);
 
-  const yValue = d3.scaleLinear()
-    .domain([0, maxValue])
-    .range([innerHeight, 0]);
-
-  const color = d3.scaleOrdinal()
-    .domain(["historical", "projected"])
-    .range(["#089c9d", "#40E0D0"]);
+  if (column === filteredPrecipitationColumns.value[0]) {
+    renderLegend(unitPerEllipse, legendRefs[column]);
+  }
 
   combinedData.forEach(d => {
-    const totalCircles = Math.floor(d.value / unitPerEllipse); // This rounds down to ensure it's a whole number
+    const totalCircles = Math.floor(d.value / unitPerEllipse);
     const barCenter = x(d.year) + x.bandwidth() / 2;
     const ellipseRx = Math.min(x.bandwidth() / 3, 12);
-    const ellipseRy = ellipseRx;
 
     for (let i = 0; i < totalCircles; i++) {
       const randomYOffset = Math.random() * 100 + 20;
       const randomDelay = Math.random() * 800;
+      const dropHeight = ellipseRx * 2.5;
+      const dropWidth = ellipseRx * 2;
 
-      g.append("ellipse")
-        .attr("cx", barCenter)
-        .attr("cy", -randomYOffset)
-        .attr("rx", ellipseRx)
-        .attr("ry", ellipseRy)
+      const dropPath = d3.path();
+      dropPath.moveTo(0, -dropHeight / 2);
+      dropPath.bezierCurveTo(dropWidth / 2, -dropHeight / 2, dropWidth / 2, dropHeight / 4, 0, dropHeight / 2);
+      dropPath.bezierCurveTo(-dropWidth / 2, dropHeight / 4, -dropWidth / 2, -dropHeight / 2, 0, -dropHeight / 2);
+
+      g.append("path")
+        .attr("d", dropPath.toString())
+        .attr("transform", `translate(${barCenter}, ${-randomYOffset}) scale(1, -1)`)
         .attr("fill", color(d.source))
         .transition()
         .delay(randomDelay)
         .duration(600)
         .ease(d3.easeBounceOut)
-        .attr("cy", y(i + 1));
+        .attr("transform", `translate(${barCenter}, ${y(i + 1)}) scale(1, -1)`);
     }
   });
 
@@ -123,11 +218,8 @@ function renderPrecipitationCircles(combinedData, svgEl) {
     .attr("fill", "transparent")
     .on("mouseover", function (event, d) {
       hoverBar.interrupt();
-
       const hoverColor = color(d.source);
-
-      hoverBar
-        .style("display", "block")
+      hoverBar.style("display", "block")
         .transition()
         .duration(500)
         .ease(d3.easeCubicOut)
@@ -136,10 +228,7 @@ function renderPrecipitationCircles(combinedData, svgEl) {
         .attr("height", innerHeight - yValue(d.value))
         .attr("fill", hoverColor);
 
-      // Remove existing labels
       g.selectAll(".bar-label").remove();
-
-      // Add new label
       g.append("text")
         .attr("class", "bar-label")
         .attr("x", x(d.year) + x.bandwidth() / 2)
@@ -147,16 +236,14 @@ function renderPrecipitationCircles(combinedData, svgEl) {
         .attr("text-anchor", "middle")
         .attr("fill", "#333")
         .attr("opacity", 0)
-        .text(d.value.toFixed(1))
+        .text(`${Math.round(d.value)} mm`)
         .transition()
         .duration(500)
         .attr("opacity", 1);
     })
     .on("mouseout", function () {
       hoverBar.interrupt();
-
-      hoverBar
-        .transition()
+      hoverBar.transition()
         .duration(500)
         .ease(d3.easeCubicOut)
         .attr("y", innerHeight)
@@ -170,42 +257,6 @@ function renderPrecipitationCircles(combinedData, svgEl) {
         .remove();
     });
 }
-
-
-
-
-function getDropdownTitle(col) {
-  return col.replace(/_/g, " ");
-}
-
-watch([historicalData, projectedData], async () => {
-  if (!historicalData.value.length || !projectedData.value.length) return;
-
-  const histCol = "Precipitation";
-
-  // Loop through the filtered columns (only the 8.5 scenario)
-  for (const column of filteredPrecipitationColumns.value) {
-    const historical = historicalData.value.map(d => ({
-      year: +d.year,
-      value: parseFloat(d[histCol]),
-      source: "historical"
-    })).filter(d => !isNaN(d.value));
-
-    const projected = projectedData.value
-      .filter(d => +d.year !== 2020)
-      .map(d => ({
-        year: +d.year,
-        value: parseFloat(d[column]),
-        source: "projected"
-      })).filter(d => !isNaN(d.value));
-
-    const combinedRaw = [...historical, ...projected];
-    const combinedData = getYearlySums(combinedRaw);
-
-    await nextTick();
-    renderPrecipitationCircles(combinedData, chartRefs[column]);
-  }
-});
 
 function getYearlySums(data) {
   const yearlySums = d3.rollups(
@@ -221,6 +272,41 @@ function getYearlySums(data) {
   return yearlySums;
 }
 
+watch([historicalData, projectedData], async () => {
+  if (!historicalData.value.length || !projectedData.value.length) return;
+
+  const histCol = "Precipitation";
+
+  for (const column of filteredPrecipitationColumns.value) {
+    const historical = historicalData.value.map(d => ({
+      year: +d.year,
+      value: Math.round(parseFloat(d[histCol])),
+      source: "historical"
+    })).filter(d => !isNaN(d.value));
+
+    const projected = projectedData.value
+      .filter(d => +d.year !== 2020)
+      .map(d => ({
+        year: +d.year,
+        value: Math.round(parseFloat(d[column])),
+        source: "projected"
+      })).filter(d => !isNaN(d.value));
+
+    const combinedRaw = [...historical, ...projected];
+    const combinedData = getYearlySums(combinedRaw);
+
+    await nextTick();
+
+    const maxValue = d3.max(combinedData, d => d.value);
+    const ellipseMinHeight = 14;
+    const chartHeight = chartRefs[column]?.parentNode?.getBoundingClientRect().height || 400;
+    const maxEllipsesVisible = Math.floor((chartHeight - 80) / ellipseMinHeight);
+    const unitPerEllipse = maxValue / maxEllipsesVisible;
+
+    renderPrecipitationCircles(combinedData, chartRefs[column], column, unitPerEllipse);
+  }
+});
+
 onMounted(async () => {
   try {
     const hist = await d3.csv("./data/MeanMaxSurfaceAirTempuratureAndPrecipitation-1951-2020-Month.csv");
@@ -229,29 +315,6 @@ onMounted(async () => {
     historicalData.value = hist;
     projectedData.value = proj;
     projectedColumns.value = Object.keys(proj[0] || {});
-
-    let resizeTimeout;
-    window.addEventListener("resize", () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        for (const column of filteredPrecipitationColumns.value) {
-          const combinedData = [
-            ...historicalData.value.map(d => ({
-              year: +d.year,
-              value: parseFloat(d["Precipitation"]),
-              source: "historical"
-            })).filter(d => !isNaN(d.value)),
-
-            ...projectedData.value.map(d => ({
-              year: +d.year,
-              value: parseFloat(d[column]),
-              source: "projected"
-            })).filter(d => !isNaN(d.value))
-          ];
-          renderPrecipitationCircles(combinedData, chartRefs[column]);
-        }
-      }, 200); // Adjust delay for performance (e.g., 200ms)
-    });
   } catch (err) {
     console.error("Error loading CSV data:", err);
   }
@@ -259,27 +322,27 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-html, body, #app {
+html,
+body,
+#app {
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-.rainfaill-precipitation {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  width: 100%;
-  height: 100%;
-}
-
 .precip-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Full viewport height */
+  height: 100vh;
   box-sizing: border-box;
-  padding: 1rem;
+  padding: 4rem 5rem 5rem 5rem;
+  overflow: auto;  /* Allow scrolling */
+  opacity: 0; /* Initially hidden */
+  transition: opacity 1s ease-in-out;
+}
+
+.precip-wrapper.in-view {
+  opacity: 1; /* Fade in when in view */
 }
 
 .bar-chart {
@@ -288,25 +351,29 @@ html, body, #app {
   flex-direction: column;
 }
 
-
 .bar-chart-block {
   width: 100%;
   height: 100%;
+  flex: 1;
+  overflow: hidden; /* Prevent overflow of chart content */
 }
 
 .bar-chart-content {
   width: 100%;
-  height: 100%; /* or use a percentage based on parent */
+  height: 100%;
+  position: relative;
 }
 
+.legend {
+  position: absolute;
+  top: 2.5rem; /* Adjust as needed */
+  left: 4.5rem;
+  padding-left: 1rem;
+  z-index: 2;
+  pointer-events: none;
+}
 
 svg {
-  width: 100%;
-  height: 100%;
+  overflow: visible;
 }
-
-h3 {
-  width: 100%;
-}
-
 </style>
