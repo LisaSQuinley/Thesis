@@ -3,7 +3,7 @@
     <h3>Historical + Projected Precipitation</h3>
     <div v-for="column in filteredPrecipitationColumns" :key="column" class="bar-chart-block">
       <div class="bar-chart-content">
-        <h4>{{ getDropdownTitle(column) }}</h4>
+        <!--         <h4>{{ getDropdownTitle(column) }}</h4> -->
         <div class="legend">
           <svg :ref="el => legendRefs[column] = el" height="40"></svg>
         </div>
@@ -31,9 +31,11 @@ const filteredPrecipitationColumns = computed(() =>
   )
 );
 
+/* 
 function getDropdownTitle(col) {
   return col.replace(/_/g, " ");
 }
+ */
 
 onMounted(() => {
   if (precipWrapperRef.value) {
@@ -90,7 +92,8 @@ function renderLegend(unitPerEllipse, svgEl) {
 
   const colorMap = {
     historical: "#089c9d",
-    projected: "#40E0D0"
+    projected: "#40E0D0",
+    regression: "url(#regressionGradient)"
   };
 
   const dropPath = d3.path();
@@ -98,26 +101,58 @@ function renderLegend(unitPerEllipse, svgEl) {
   dropPath.bezierCurveTo(dropWidth / 2, -dropHeight / 2, dropWidth / 2, dropHeight / 4, 0, dropHeight / 2);
   dropPath.bezierCurveTo(-dropWidth / 2, dropHeight / 4, -dropWidth / 2, -dropHeight / 2, 0, -dropHeight / 2);
 
-  const legendItems = ["historical", "projected"];
+  const legendItems = ["historical", "projected", "regression"];
 
   legendItems.forEach((type, i) => {
     const centerX = 20;
     const centerY = 20 + i * 25;
 
-    svg.append("path")
-      .attr("d", dropPath.toString())
-      .attr("transform", `translate(${centerX}, ${centerY}) scale(1, -1)`)
-      .attr("fill", colorMap[type]);
+    if (type === "regression") {
+      // Add regression line
+      svg.append("line")
+        .attr("x1", centerX - 5)
+        .attr("x2", centerX + 15)
+        .attr("y1", centerY)
+        .attr("y2", centerY)
+        .attr("stroke", "#5C4033")
+        .attr("stroke-width", 2); 
 
-    svg.append("text")
-      .attr("x", centerX + 15)
-      .attr("y", centerY + 5)
-      .attr("fill", "#333")
-      .attr("font-size", "12px")
-      .text(`${type === "historical" ? "Historical" : "Projected"}: 1 drop = ${Math.round(unitPerEllipse)} mm`);
+      svg.append("text")
+        .attr("x", centerX + 20)
+        .attr("y", centerY + 5)
+        .attr("fill", "#333")
+        .attr("font-size", "12px")
+        .text("Trend (Regression Line)");
+    } else {
+      // Add raindrop legend
+      svg.append("path")
+        .attr("d", dropPath.toString())
+        .attr("transform", `translate(${centerX}, ${centerY}) scale(1, -1)`)
+        .attr("fill", colorMap[type]);
+
+      svg.append("text")
+        .attr("x", centerX + 15)
+        .attr("y", centerY + 5)
+        .attr("fill", "#333")
+        .attr("font-size", "12px")
+        .text(`${type === "historical" ? "Past" : "Future"}: 1 raindrop = ${Math.round(unitPerEllipse)} mm`);
+    }
   });
 
-  svg.attr("width", 200).attr("height", 60);
+  svg.attr("width", 250).attr("height", 90);
+}
+
+function linearRegression(x, y) {
+  const xMean = d3.mean(x);
+  const yMean = d3.mean(y);
+  const slope = d3.sum(x.map((d, i) => (d - xMean) * (y[i] - yMean))) / d3.sum(x.map(d => (d - xMean) ** 2));
+  const intercept = yMean - slope * xMean;
+
+  return {
+    slope,
+    intercept,
+    predict: x => intercept + slope * x
+  };
 }
 
 
@@ -146,6 +181,57 @@ function renderPrecipitationCircles(combinedData, svgEl, column, unitPerEllipse)
   const maxValue = d3.max(combinedData, d => d.value);
   const yScale = d3.scaleLinear().domain([0, maxValue]).range([innerHeight, 0]);
   const color = d3.scaleOrdinal().domain(["historical", "projected"]).range(["#089c9d", "#40E0D0"]);
+
+  // Compute linear regression
+  const regression = linearRegression(combinedData.map(d => d.year), combinedData.map(d => d.value));
+
+  // Create a line path
+  const line = d3.line()
+    .x(d => xScale(d.year) + xScale.bandwidth() / 2)
+    .y(d => yScale(regression.predict(d.year)));
+
+  const regressionData = [
+    { year: d3.min(combinedData, d => d.year) },
+    { year: d3.max(combinedData, d => d.year) }
+  ];
+
+  // 1. Append a gradient to the SVG
+  const defs = svg.append("defs");
+
+  const gradient = defs.append("linearGradient")
+    .attr("id", "regressionGradient")
+    .attr("x1", "0%")
+    .attr("x2", "100%")
+    .attr("y1", "0%")
+    .attr("y2", "0%");
+
+  gradient.append("stop")
+    .attr("offset", "0%")
+    .attr("stop-color", "#DEB887"); // light brown
+
+  gradient.append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", "#5C4033"); // dark brown
+
+  // 2. Draw the regression line using the gradient stroke
+  const regressionPath = g.append("path")
+    .datum(regressionData)
+    .attr("fill", "none")
+    .attr("stroke", "url(#regressionGradient)") // Use the gradient
+    .attr("stroke-width", 2)
+    .attr("d", line);
+
+  // 3. Animate the stroke drawing
+  const totalLength = regressionPath.node().getTotalLength();
+
+  regressionPath
+    .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+    .attr("stroke-dashoffset", totalLength)
+    .transition()
+    .duration(3000)
+    .ease(d3.easeCubicOut)
+    .attr("stroke-dashoffset", 0);
+
 
   if (column === filteredPrecipitationColumns.value[0]) {
     renderLegend(unitPerEllipse, legendRefs[column]);
@@ -185,58 +271,58 @@ function renderPrecipitationCircles(combinedData, svgEl, column, unitPerEllipse)
 
   const xTickYears = years.filter((y, i, arr) => i === 0 || i === arr.length - 1 || y % 10 === 0);
 
-// X Axis Tick Labels
-g.append("g")
-  .selectAll("text.x-axis")
-  .data(xTickYears)
-  .enter()
-  .append("text")
-  .attr("class", "x-axis")
-  .attr("x", d => xScale(d) + xScale.bandwidth() / 2)
-  .attr("y", innerHeight + 25)
-  .style("text-anchor", "middle")
-  .text(d => d);
+  // X Axis Tick Labels
+  g.append("g")
+    .selectAll("text.x-axis")
+    .data(xTickYears)
+    .enter()
+    .append("text")
+    .attr("class", "x-axis")
+    .attr("x", d => xScale(d) + xScale.bandwidth() / 2)
+    .attr("y", innerHeight + 25)
+    .style("text-anchor", "middle")
+    .text(d => d);
 
-// X Axis Tick Lines
-g.append("g")
-  .selectAll("line.x-axis-tick")
-  .data(xTickYears)
-  .enter()
-  .append("line")
-  .attr("class", "x-axis-tick")
-  .attr("x1", d => xScale(d) + xScale.bandwidth() / 2)
-  .attr("x2", d => xScale(d) + xScale.bandwidth() / 2)
-  .attr("y1", innerHeight)
-  .attr("y2", innerHeight + 6)
-  .style("stroke", "black")
-  .style("stroke-width", 1);
+  // X Axis Tick Lines
+  g.append("g")
+    .selectAll("line.x-axis-tick")
+    .data(xTickYears)
+    .enter()
+    .append("line")
+    .attr("class", "x-axis-tick")
+    .attr("x1", d => xScale(d) + xScale.bandwidth() / 2)
+    .attr("x2", d => xScale(d) + xScale.bandwidth() / 2)
+    .attr("y1", innerHeight)
+    .attr("y2", innerHeight + 6)
+    .style("stroke", "black")
+    .style("stroke-width", 1);
 
 
-// Y-axis Labels
-g.append("g")
-  .selectAll("text.y-axis")
-  .data(yScale.ticks(5).filter(d => d !== 0))
-  .enter()
-  .append("text")
-  .attr("class", "y-axis")
-  .attr("x", -40)
-  .attr("y", d => (yScale(d)+5))
-  .style("text-anchor", "middle")
-  .text(d => d.toFixed(0));  // Display the values rounded to integers
+  // Y-axis Labels
+  g.append("g")
+    .selectAll("text.y-axis")
+    .data(yScale.ticks(5).filter(d => d !== 0))
+    .enter()
+    .append("text")
+    .attr("class", "y-axis")
+    .attr("x", -40)
+    .attr("y", d => (yScale(d) + 5))
+    .style("text-anchor", "middle")
+    .text(d => d.toFixed(0));  // Display the values rounded to integers
 
-// Y-axis Tick Lines
-g.append("g")
-  .selectAll("line.y-axis-tick")
-  .data(yScale.ticks(5).filter(d => d !== 0))
-  .enter()
-  .append("line")
-  .attr("class", "y-axis-tick")
-  .attr("x1", -20)
-  .attr("x2", -10)
-  .attr("y1", d => yScale(d))
-  .attr("y2", d => yScale(d))
-  .style("stroke", "black")
-  .style("stroke-width", 1);
+  // Y-axis Tick Lines
+  g.append("g")
+    .selectAll("line.y-axis-tick")
+    .data(yScale.ticks(5).filter(d => d !== 0))
+    .enter()
+    .append("line")
+    .attr("class", "y-axis-tick")
+    .attr("x1", -20)
+    .attr("x2", -10)
+    .attr("y1", d => yScale(d))
+    .attr("y2", d => yScale(d))
+    .style("stroke", "black")
+    .style("stroke-width", 1);
 
 
   const hoverBar = g.append("rect")
@@ -420,7 +506,7 @@ svg {
 }
 
 .x-axis {
-    font-size: 0.75em;
+  font-size: 0.75em;
 }
 
 .y-axis {

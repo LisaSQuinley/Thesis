@@ -1,29 +1,31 @@
 <template>
-    <div class="temperature-wrapper unified-heatmap">
+    <div ref="wrapperRef" class="temperature-wrapper unified-heatmap">
         <h3>Historical + Projected Surface Air Temperature</h3>
 
         <div class="control-container">
-            <div class="radio-buttons">
-                <label>
-                    <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
-                </label>
-                <label>
-                    <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
-                </label>
+            <!-- Left Side: Controls -->
+            <div class="left-controls">
+                <div class="radio-buttons">
+                    <label>
+                        <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
+                    </label>
+                    <label>
+                        <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
+                    </label>
+                </div>
+
+                <div class="overlay-toggle">
+                    <label>
+                        <input type="radio" :value="true" v-model="showOverlay" /> Show Covers
+                    </label>
+                    <label>
+                        <input type="radio" :value="false" v-model="showOverlay" /> Hide Covers
+                    </label>
+                </div>
             </div>
 
-            <div class="overlay-toggle">
-                <label>
-                    <input type="radio" :value="true" v-model="showOverlay" /> Show Covers
-                </label>
-                <label>
-                    <input type="radio" :value="false" v-model="showOverlay" /> Hide Covers
-                </label>
-            </div>
-
-
+            <!-- Right Side: Legend -->
             <div class="legend">
-                <h4>Temperature Legend</h4>
                 <div class="legend-items">
                     <div class="legend-item" v-for="(color, index) in legendColors" :key="index">
                         <div class="legend-color" :style="{ backgroundColor: color.color }"></div>
@@ -34,14 +36,9 @@
         </div>
 
         <div class="heatmap-container">
-<div
-    v-for="(column, index) in filteredProjectedColumnOptions"
-    :key="column"
-    class="heatmap-block"
-    :class="{ visible: showBlocks[index] }"
-    @mouseenter="hoveredBlock = column"
-    @mouseleave="hoveredBlock = null"
->
+            <div v-for="(column, index) in filteredProjectedColumnOptions" :key="column" class="heatmap-block"
+                :class="{ visible: showBlocks[index] }" @mouseenter="hoveredBlock = column"
+                @mouseleave="hoveredBlock = null">
 
                 <div class="heatmap-visual">
                     <svg :ref="el => heatmapRefs[column] = el"
@@ -213,7 +210,7 @@ function renderUnifiedHeatmap(data, svgEl, isLastHeatmap) {
             .style("text-anchor", "middle")
             .text(d => d);
     }
-    
+
 
     g.append("g")
         .selectAll("line.x-axis-tick")
@@ -293,58 +290,91 @@ onMounted(async () => {
 
             renderUnifiedHeatmap(combinedData, heatmapRefs[column], column === filteredProjectedColumnOptions.value.at(-1));
 
-            // Staggered fade-in
-            setTimeout(() => {
-                showBlocks.value[i] = true;
-            }, i * 300); // 300ms stagger
+
         }
 
-observer.value = new IntersectionObserver((entries) => {
-    const entry = entries[0];
-    if (entry.isIntersecting) {
-        for (let i = 0; i < filteredProjectedColumnOptions.value.length; i++) {
-            setTimeout(() => {
-                showBlocks.value[i] = true;
-            }, i * 300); // 300ms stagger
-        }
-        observer.value.disconnect(); // Trigger only once
-    }
-}, { threshold: 0.3 }); // Adjust threshold as needed
+        // IntersectionObserver setup
+        observer.value = new IntersectionObserver((entries) => {
+            const entry = entries[0];
+            if (entry.isIntersecting) {
+                // Reset showBlocks and re-trigger animation
+                showBlocks.value = Array(filteredProjectedColumnOptions.value.length).fill(false);
 
-if (wrapperRef.value) {
-    observer.value.observe(wrapperRef.value);
-}
+                for (let i = 0; i < filteredProjectedColumnOptions.value.length; i++) {
+                    const column = filteredProjectedColumnOptions.value[i];
+                    const histCol = selectedColumnGroup.value === "mean" ? "Mean Temp" : "Max Temp";
+                    const combinedData = [
+                        ...historicalData.value.map(d => ({
+                            year: +d.year,
+                            month: d.month,
+                            value: parseFloat(d[histCol]),
+                            source: "historical"
+                        })),
+                        ...projectedData.value.map(d => ({
+                            year: +d.year,
+                            month: d.month,
+                            value: parseFloat(d[column]),
+                            source: "projected"
+                        }))
+                    ];
 
+                    renderUnifiedHeatmap(combinedData, heatmapRefs[column], column === filteredProjectedColumnOptions.value.at(-1));
 
-        window.addEventListener("resize", () => {
-            for (const column of filteredProjectedColumnOptions.value) {
-                const histCol = selectedColumnGroup.value === "mean" ? "Mean Temp" : "Max Temp";
-                const combinedData = [
-                    ...historicalData.value.map(d => ({
-                        year: +d.year,
-                        month: d.month,
-                        value: parseFloat(d[histCol]),
-                        source: "historical"
-                    })),
-                    ...projectedData.value.map(d => ({
-                        year: +d.year,
-                        month: d.month,
-                        value: parseFloat(d[column]),
-                        source: "projected"
-                    }))
-                ];
-                renderUnifiedHeatmap(combinedData, heatmapRefs[column], column === filteredProjectedColumnOptions.value.at(-1));
+                    setTimeout(() => {
+                        showBlocks.value[i] = true;
+                    }, i * 1000);
+                }
             }
+        }, { threshold: 0.3 });
+
+        let resizeTimeout;
+        const handleResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                for (const column of filteredProjectedColumnOptions.value) {
+                    const histCol = selectedColumnGroup.value === "mean" ? "Mean Temp" : "Max Temp";
+                    const combinedData = [
+                        ...historicalData.value.map(d => ({
+                            year: +d.year,
+                            month: d.month,
+                            value: parseFloat(d[histCol]),
+                            source: "historical"
+                        })),
+                        ...projectedData.value.map(d => ({
+                            year: +d.year,
+                            month: d.month,
+                            value: parseFloat(d[column]),
+                            source: "projected"
+                        }))
+                    ];
+                    renderUnifiedHeatmap(combinedData, heatmapRefs[column], column === filteredProjectedColumnOptions.value.at(-1));
+                }
+            }, 1000);
+        };
+
+        window.addEventListener("resize", handleResize);
+        onBeforeUnmount(() => {
+            window.removeEventListener("resize", handleResize);
         });
+
     } catch (err) {
         console.error("Error loading CSV data:", err);
     }
+
+    if (wrapperRef.value && observer.value) {
+        observer.value.observe(wrapperRef.value);
+    }
+
 });
 
 
 onBeforeUnmount(() => {
+    if (observer.value && wrapperRef.value) {
+        observer.value.unobserve(wrapperRef.value);
+    }
     window.removeEventListener("resize", renderUnifiedHeatmap);
 });
+
 </script>
 
 <style scoped>
@@ -360,32 +390,36 @@ onBeforeUnmount(() => {
 
 .control-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: space-between;
+    /* Push children to edges */
+    align-items: flex-start;
     margin-bottom: 0.5rem;
     flex-shrink: 0;
+    gap: 2rem;
+}
+
+.left-controls {
+    display: flex;
+    flex-direction: column;
 }
 
 .radio-buttons,
 .overlay-toggle {
     display: flex;
     gap: 10px;
-    margin-top: 5px;
 }
 
 .legend {
-    margin-top: 10px;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-start;
 }
 
 .legend-items {
     display: flex;
     gap: 15px;
-    justify-content: flex-start;
-    margin-top: 5px;
+    flex-wrap: wrap;
 }
+
 
 .legend-item {
     display: flex;
@@ -404,17 +438,21 @@ onBeforeUnmount(() => {
     gap: 0;
     flex: 1;
     height: 100%;
-    margin-top: 0; /* Ensure no margin at the top */
+    margin-top: 0;
+    /* Ensure no margin at the top */
 }
 
 .heatmap-block {
     flex: 1;
-    height: 25%; /* Ensure equal distribution of space */
+    height: 25%;
+    /* Ensure equal distribution of space */
     width: 100%;
     display: flex;
-    align-items: flex-start; /* Align heatmaps at the top */
+    align-items: flex-start;
+    /* Align heatmaps at the top */
     justify-content: center;
-    margin-top: 0; /* Remove any margin pushing the blocks down */
+    margin-top: 0;
+    /* Remove any margin pushing the blocks down */
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 1s ease, transform 1s ease;
@@ -430,12 +468,14 @@ onBeforeUnmount(() => {
     width: 100%;
     height: 100%;
     display: flex;
-    justify-content: flex-start; /* Align heatmap content to the top */
+    justify-content: flex-start;
+    /* Align heatmap content to the top */
 }
 
 .heatmap-cover {
     position: absolute;
-    top: 0; /* Align the cover to the top */
+    top: 0;
+    /* Align the cover to the top */
     left: 0;
     width: 100%;
     height: 100%;
