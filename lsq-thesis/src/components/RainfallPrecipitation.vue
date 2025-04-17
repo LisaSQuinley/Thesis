@@ -58,7 +58,15 @@ const observer = new IntersectionObserver(
   { threshold: 0.5 }
 );
 
+function getUnitPerEllipse() {
+  const { innerWidth: width, innerHeight: height } = window;
+  return height > width ? 5 : 10;
+}
+
+
 function triggerPrecipitationAnimation() {
+  const unitPerEllipse = getUnitPerEllipse(); // 👈 New line
+
   filteredPrecipitationColumns.value.forEach(column => {
     const historical = historicalData.value.map(d => ({
       year: +d.year,
@@ -76,7 +84,6 @@ function triggerPrecipitationAnimation() {
 
     const combinedRaw = [...historical, ...projected];
     const combinedData = getYearlySums(combinedRaw);
-    const unitPerEllipse = 10;
 
     renderPrecipitationCircles(combinedData, chartRefs[column], column, unitPerEllipse);
   });
@@ -402,6 +409,7 @@ function getYearlySums(data) {
 watch([historicalData, projectedData], async () => {
   if (!historicalData.value.length || !projectedData.value.length) return;
 
+  const unitPerEllipse = getUnitPerEllipse(); // 👈 New line
   const histCol = "Precipitation";
 
   for (const column of filteredPrecipitationColumns.value) {
@@ -424,7 +432,6 @@ watch([historicalData, projectedData], async () => {
 
     await nextTick();
 
-    const unitPerEllipse = 10;
     renderPrecipitationCircles(combinedData, chartRefs[column], column, unitPerEllipse);
   }
 });

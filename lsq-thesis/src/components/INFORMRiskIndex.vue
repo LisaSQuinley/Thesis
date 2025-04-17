@@ -372,7 +372,7 @@ h3 {
   padding: 12px 16px;
   border-radius: 4px;
   font-size: 14px;
-  color: #333;
+  color: #2c3e50;
   z-index: 999;
 }
 

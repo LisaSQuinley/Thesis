@@ -1,7 +1,5 @@
 <template>
   <div id="scrollyteller">
-    <HelloMorocco msg="Droughts! Floods! Fires!" />
-
     <div
       v-for="(stepComponent, index) in steps"
       :key="index"
@@ -47,6 +45,7 @@ export default {
   data() {
     return {
       steps: [
+        'HelloMorocco',
         'MoroccoMapView',
         'RainfallPrecipitation',
         'MeanTemperature',
@@ -117,14 +116,22 @@ handleKeyPress(e) {
 
 <style>
 
-body, html, #app {
-  height: 100%;
-  margin: 0;
-  scroll-behavior: smooth;
-  overflow-x: hidden;
+#scrollyteller {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
 }
 
+
+body, html {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+
 .charts-wrapper {
+  scroll-snap-align: start;
   height: 100vh;
   width: 100vw;
   display: flex;
@@ -134,6 +141,7 @@ body, html, #app {
   padding: 20px;
   box-sizing: border-box;
 }
+
 
 
 #app {
