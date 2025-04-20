@@ -1,6 +1,6 @@
 <template>
   <div class="precip-wrapper bar-chart" ref="precipWrapperRef">
-    <h3>Historical + Projected Precipitation</h3>
+    <h3>Raincheck Forever</h3>
     <div v-for="column in filteredPrecipitationColumns" :key="column" class="bar-chart-block">
       <div class="bar-chart-content">
         <!--         <h4>{{ getDropdownTitle(column) }}</h4> -->

@@ -1,6 +1,6 @@
 <template>
     <div ref="wrapperRef" class="temperature-wrapper unified-heatmap">
-        <h3>Historical + Projected Surface Air Temperature</h3>
+        <h3>Burn, Baby, Burn.</h3>
 
         <div class="control-container">
             <!-- Left Side: Controls -->
@@ -45,11 +45,16 @@
                         :data-last-heatmap="index === filteredProjectedColumnOptions.length - 1"></svg>
                     <div class="heatmap-cover" :class="{ hidden: hoveredBlock === column || !showOverlay }">
                         <div class="cover-message">
-                            <strong>{{ getScenarioInfo(column).title }}</strong><br />
-                            <em>{{ getScenarioInfo(column).subtitle }}</em><br />
-                            <span>{{ getScenarioInfo(column).soundBite }}</span><br />
-                            <span v-html="getScenarioInfo(column).message"></span>
+                            <div class="cover-headings">
+                                <h4>{{ getScenarioInfo(column).title }}</h4>
+                                <h5>{{ getScenarioInfo(column).subtitle }}</h5>
+                                <h6>{{ getScenarioInfo(column).soundBite }}</h6>
+                            </div>
+                            <div class="cover-paragraph">
+                                <p v-html="getScenarioInfo(column).message"></p>
+                            </div>
                         </div>
+
                     </div>
 
                 </div>
@@ -74,17 +79,29 @@ const projectedColumns = ref([]);
 const selectedColumnGroup = ref("max");
 const selectedProjectedColumn = ref("");
 
+const hasAnimated = ref(false);
+
+const legendInFahrenheit = ref(false);
+
+
 // NEW STATE: Show/hide overlays
 const showOverlay = ref(true);
 
-const legendColors = [
-    { color: "#40E0D0", label: "15°C" },
-    { color: "#7FFF00", label: "20°C" },
-    { color: "#FFFF00", label: "25°C" },
-    { color: "#FF8000", label: "30°C" },
-    { color: "#FF0000", label: "35°C" },
-    { color: "#820747", label: "40°C+" }
-];
+const legendColors = computed(() => {
+    const celsiusBreaks = [15, 20, 25, 30, 35];
+    const fahrenheitBreaks = celsiusBreaks.map(c => Math.round(c * 9 / 5 + 32));
+    const labels = legendInFahrenheit.value
+        ? [...fahrenheitBreaks.map(t => `${t}°F`), `${Math.round(40 * 9 / 5 + 32)}°F+`]
+        : [...celsiusBreaks.map(t => `${t}°C`), "40°C+"];
+
+    const colors = ["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"];
+
+    return colors.map((color, i) => ({
+        color,
+        label: labels[i]
+    }));
+});
+
 
 const filteredProjectedColumnOptions = computed(() =>
     projectedColumns.value.filter(col =>
@@ -98,30 +115,30 @@ const getScenarioInfo = (columnName) => {
     if (columnName.includes("SSP1-2.6")) {
         return {
             title: "🌱 Green Leap",
-            subtitle: "SSP1-2.6: Best-Case Scenario",
+            subtitle: "Best-Case Scenario",
             soundBite: "🌿 Too late for the leap — we missed this train.",
-            message: "Aiming high on sustainability, this scenario sees the world making strong progress on cutting emissions, hitting net-zero after 2050. The result? Global warming is likely kept below 2°C by 2100. It’s the climate-friendly path."
+            message: "Aiming high on sustainability, this scenario sees the world making strong progress on cutting emissions, hitting net-zero after 2050. <br>The result? Global warming is likely kept below 2°C by 2100. <br>It’s the climate-friendly path."
         };
     } else if (columnName.includes("SSP2-4.5")) {
         return {
             title: "🌍 Middle Ground",
-            subtitle: "SSP2-4.5: Business-as-Usual Scenario",
+            subtitle: "Business-as-Usual Scenario",
             soundBite: "🛤️ Still on track — but drifting toward danger.",
-            message: "This is the “do a little, but not too much” path. Emissions stay close to current levels until around mid-century, then slowly decline. Net-zero isn't reached until <i>after</i> 2100. It's a compromise route, with moderate climate action and moderate consequences."
+            message: "This is the “do a little, but not too much” path. <br>Emissions stay close to current levels until around mid-century, then slowly decline. <br>Net-zero isn't reached until <i>after</i> 2100. <br>It's a compromise route, with moderate climate action and moderate consequences."
         };
     } else if (columnName.includes("SSP3-7.0")) {
         return {
             title: "🔥 Divided Drift",
-            subtitle: "SSP3-7.0: Worsening Scenario",
+            subtitle: "Worsening Scenario",
             soundBite: "⚠️ Cracks in the system — and no one’s patching them.",
-            message: "In this future, the world is fragmented, with regional tensions and little cooperation. Emissions keep rising, nearly doubling by 2100. Climate action takes a back seat, leading to increasing global risks and instability."
+            message: "In this future, the world is fragmented, with regional tensions and little cooperation. <br>Emissions keep rising, nearly doubling by 2100. <br>Climate action takes a back seat, leading to increasing global risks and instability."
         };
     } else if (columnName.includes("SSP5-8.5")) {
         return {
             title: "💣 Turbocharged Trouble",
-            subtitle: "SSP5-8.5: Worst-Case Scenario",
+            subtitle: "Worst-Case Scenario",
             soundBite: "🚨 Pedal to the metal — and no brakes in sight.",
-            message: "Fueled by fossil energy and tech innovation, this path prioritizes economic growth over sustainability. Emissions soar, and radiative forcing reaches the highest levels— it’s the “worst-case” outlook. It's the high-speed lane to extreme climate change."
+            message: "Fueled by fossil energy and tech innovation, this path prioritizes economic growth over sustainability. <br>Emissions soar, and radiative forcing reaches the highest levels— it’s the “worst-case” outlook. <br>It's the high-speed lane to extreme climate change."
         };
     } else {
         return {
@@ -296,8 +313,10 @@ onMounted(async () => {
         // IntersectionObserver setup
         observer.value = new IntersectionObserver((entries) => {
             const entry = entries[0];
-            if (entry.isIntersecting) {
-                // Reset showBlocks and re-trigger animation
+            if (entry.isIntersecting && !hasAnimated.value) {
+                hasAnimated.value = true; // prevent future triggers
+
+                // Start animation only once
                 showBlocks.value = Array(filteredProjectedColumnOptions.value.length).fill(false);
 
                 for (let i = 0; i < filteredProjectedColumnOptions.value.length; i++) {
@@ -326,6 +345,15 @@ onMounted(async () => {
                 }
             }
         }, { threshold: 0.3 });
+
+        let toggleInterval = setInterval(() => {
+            legendInFahrenheit.value = !legendInFahrenheit.value;
+        }, 10000); // every 10 seconds
+
+        onBeforeUnmount(() => {
+            clearInterval(toggleInterval);
+        });
+
 
         let resizeTimeout;
         const handleResize = () => {
@@ -501,8 +529,19 @@ onBeforeUnmount(() => {
 }
 
 .cover-message {
-    text-align: center;
-    padding: 1rem;
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+}
+
+.cover-headings,
+.cover-paragraph {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    padding: 0 10rem;
 }
 
 .x-axis {
@@ -533,5 +572,30 @@ onBeforeUnmount(() => {
 
 .heatmap-block:nth-child(1) .heatmap-cover {
     background-color: rgb(255, 0, 0);
+}
+
+h4 {
+    text-align: left;
+    font-size: 1em;
+    margin: 0;
+}
+
+h5 {
+    text-align: left;
+    font-size: 0.8em;
+    margin: 0;
+}
+
+h6 {
+    text-align: left;
+    font-size: 0.6em;
+    margin: 0;
+}
+
+p {
+    font-size: 1em;
+    margin: 0;
+    text-align: left;
+    font-weight: 400;
 }
 </style>

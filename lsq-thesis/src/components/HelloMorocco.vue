@@ -20,7 +20,6 @@ html, body {
     width: 100vw;
     display: flex;
     flex-direction: column;
-    padding: 4rem 5rem 8rem 5rem;
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -29,6 +28,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  margin-bottom: 150px;
 }
 
 h1 {
