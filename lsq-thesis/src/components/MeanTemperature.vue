@@ -24,10 +24,19 @@
                 </div>
             </div>
 
-            <!-- Right Side: Legend -->
+            <!-- Right Side: Legends -->
             <div class="legend">
+                <!-- Color Legend -->
                 <div class="legend-items">
                     <div class="legend-item" v-for="(color, index) in legendColors" :key="index">
+                        <div class="legend-color" :style="{ backgroundColor: color.color }"></div>
+                        <span>{{ color.label }}</span>
+                    </div>
+                </div>
+
+                <!-- Grayscale Legend (directly underneath color legend) -->
+                <div class="legend-items grayscale-legend">
+                    <div class="legend-item" v-for="(color, index) in grayscaleLegendColors" :key="index">
                         <div class="legend-color" :style="{ backgroundColor: color.color }"></div>
                         <span>{{ color.label }}</span>
                     </div>
@@ -63,6 +72,8 @@
     </div>
 </template>
 
+
+
 <script setup>
 import * as d3 from "d3";
 import { ref, onMounted, onBeforeUnmount, nextTick, computed, watch } from "vue";
@@ -97,6 +108,19 @@ const legendColors = computed(() => {
     const colors = ["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"];
 
     return colors.map((color, i) => ({
+        color,
+        label: labels[i]
+    }));
+});
+
+// Grayscale version of the color scale (same range but grayscale)
+const grayscaleLegendColors = computed(() => {
+    const grayscaleColors = [
+        "#D3D3D3", "#A9A9A9", "#808080", "#505050", "#303030", "#101010"
+    ];
+    const labels = legendColors.value.map(color => color.label); // Use the same labels
+
+    return grayscaleColors.map((color, i) => ({
         color,
         label: labels[i]
     }));
@@ -228,7 +252,6 @@ function renderUnifiedHeatmap(data, svgEl, isLastHeatmap) {
             .text(d => d);
     }
 
-
     g.append("g")
         .selectAll("line.x-axis-tick")
         .data(xAxisTicks)
@@ -251,6 +274,13 @@ function renderUnifiedHeatmap(data, svgEl, isLastHeatmap) {
         .style("text-anchor", "middle")
         .text(d => d);
 
+    // Function to convert color to grayscale
+    function toGrayscale(color) {
+        const rgb = d3.rgb(color);
+        const grayscale = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+        return d3.rgb(grayscale, grayscale, grayscale);
+    }
+
     g.selectAll(".heatmap-cell")
         .data(data)
         .enter()
@@ -260,7 +290,14 @@ function renderUnifiedHeatmap(data, svgEl, isLastHeatmap) {
         .attr("y", d => yScale(d.month))
         .attr("width", xScale.bandwidth())
         .attr("height", yScale.bandwidth())
-        .style("fill", d => colorScale(d.value))
+        .style("fill", d => {
+            const color = colorScale(d.value);
+            // Convert the color to grayscale for years 2020 or earlier
+            if (d.year <= 2020) {
+                return toGrayscale(color); // Convert color to grayscale
+            }
+            return color; // Keep the original color for later years
+        })
         .style("opacity", 0)
         .transition()
         .duration(500)
@@ -439,6 +476,7 @@ onBeforeUnmount(() => {
 
 .legend {
     display: flex;
+    flex-direction: column; /* Stack legends vertically */
     align-items: flex-start;
 }
 
@@ -447,7 +485,6 @@ onBeforeUnmount(() => {
     gap: 15px;
     flex-wrap: wrap;
 }
-
 
 .legend-item {
     display: flex;
@@ -459,6 +496,8 @@ onBeforeUnmount(() => {
     width: 15px;
     height: 15px;
 }
+
+
 
 .heatmap-container {
     display: flex;

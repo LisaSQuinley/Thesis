@@ -2,30 +2,38 @@
   <div class="sheep-cattle-herds" ref="herdArea">
     <!-- Background canvas -->
     <canvas class="background-canvas" ref="noiseCanvas"></canvas>
-    <div class="herd-text" ref="herdText" :class="{ 'visible': textStage !== 'initial' }">
 
-      <h3 v-if="textStage === 'reducing'">2014: The Grazeful Era</h3>
-      <h3 v-else-if="textStage === 'complete'">2025: Desperately Seeking Grass</h3>
-      <p v-if="textStage === 'reducing'">
-        Imagine a herd of sheep and cattle, grazing peacefully in the fields of Morocco.
-      </p>
-      <p v-else-if="textStage === 'complete'">
-        According to official figures, Morocco's cattle and sheep herds have decreased
-        by 38% in 2025 since the last census nine years ago, in 2014, due to consecutive
-        droughts.<br />
-        And with Morocco in the sixth year of the drought, the Moroccan government has even
-        asked its citizens not to slaughter sheep for the upcoming holiday Eid al-Adha.
-      </p>
-    </div>
+    <!-- White padded boundary -->
+    <div class="herd-padding-wrapper">
+      <div class="herd-text" ref="herdText" :class="{ 'visible': textStage !== 'initial' }">
+        <h3 v-if="textStage === 'reducing'">2014: The Grazeful Era</h3>
+        <h3 v-else-if="textStage === 'complete'">2025: Desperately Seeking Grass</h3>
+        <p v-if="textStage === 'reducing'">
+          Imagine a herd of sheep and cattle, grazing peacefully in the fields of Morocco.
+        </p>
+        <p v-else-if="textStage === 'complete'">
+          According to official figures, Morocco's cattle and sheep herds have decreased
+          by 38% in 2025 since the last census nine years ago, in 2014, due to consecutive
+          droughts.<br />
+          And with Morocco in the sixth year of the drought, the Moroccan government has even
+          asked its citizens not to slaughter sheep for the upcoming holiday Eid al-Adha.
+        </p>
+      </div>
 
-
-    <!-- Visual placement zone with no padding -->
-    <div class="herd-visual-area" ref="herdVisual">
-      <img v-for="(animal) in displayedHerd" :key="animal.id" :src="require(`@/assets/herds/${animal.src}`)"
-        class="herd-image" :style="animal.style" />
+      <!-- Visual placement zone -->
+      <div class="herd-visual-area" ref="herdVisual">
+        <img
+          v-for="(animal) in displayedHerd"
+          :key="animal.id"
+          :src="require(`@/assets/herds/${animal.src}`)"
+          class="herd-image"
+          :style="animal.style"
+        />
+      </div>
     </div>
   </div>
 </template>
+
 
 <script>
 export default {
@@ -279,28 +287,32 @@ export default {
 h3 {
   margin-bottom: 1rem;
 }
+.sheep-cattle-herds {
+  position: relative;
+  width: calc(100vw - 11rem);
+  height: calc(100vh - 10rem - 20px);
+  overflow: hidden;
+}
 
 .background-canvas {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 0;
+  width: 100%;
+  height: 100%;
 }
 
-
-
-.sheep-cattle-herds {
-  width: 100vw;
-  padding: 3rem 5rem 5rem 5rem;
-  height: calc(100vh - 9rem - 20px);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.herd-padding-wrapper {
   position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 2rem 2rem 2rem 2rem;
+  box-sizing: border-box;
+  z-index: 1;
 }
 
-.sheep-cattle-herds .herd-text {
+.herd-text {
   width: 40%;
   margin: 0 auto;
   opacity: 0;
@@ -310,28 +322,28 @@ h3 {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1;
+  z-index: 2;
+  text-align: center;
 }
 
-.sheep-cattle-herds .herd-text.visible {
+.herd-text.visible {
   opacity: 1;
   visibility: visible;
 }
 
-.sheep-cattle-herds .herd-visual-area {
+.herd-visual-area {
   position: relative;
   width: 100%;
   height: 100%;
-  flex-grow: 1;
-  margin-top: 1rem;
   overflow: hidden;
 }
 
-.sheep-cattle-herds .herd-image {
+.herd-image {
   width: 100px;
   height: 100px;
   object-fit: contain;
   position: absolute;
   transition: transform 0.5s ease, opacity 0.5s ease;
 }
+
 </style>
