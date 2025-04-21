@@ -105,7 +105,7 @@ const legendColors = computed(() => {
         ? [...fahrenheitBreaks.map(t => `${t}°F`), `${Math.round(40 * 9 / 5 + 32)}°F+`]
         : [...celsiusBreaks.map(t => `${t}°C`), "40°C+"];
 
-    const colors = ["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"];
+    const colors = ["#40E0D0", "#7FFF00", "#FFFF00", "#FF8000", "#FF0000", "#820747"]; // colors are: pale turquoise, chartreuse, yellow, orange, red, dark red
 
     return colors.map((color, i) => ({
         color,
