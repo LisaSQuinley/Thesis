@@ -22,22 +22,21 @@
 
       <!-- Visual placement zone -->
       <div class="herd-visual-area" ref="herdVisual">
-        <img
-          v-for="(animal) in displayedHerd"
-          :key="animal.id"
-          :src="require(`@/assets/herds/${animal.src}`)"
-          class="herd-image"
-          :style="animal.style"
-        />
+        <img v-for="(animal) in displayedHerd" :key="animal.id" :src="require(`@/assets/herds/${animal.src}`)"
+          class="herd-image" :style="animal.style" />
       </div>
-<!-- Conditionally render the SVG when the complete animation happens -->
-<div v-if="textStage === 'complete'" class="svg-container">
-  <img src="@/assets/thirty-eight.svg" alt="Thirty Eight" ref="svgImage" />
-</div>
+      <div
+  class="background-overlay"
+  :style="{ backgroundColor: backgroundTransitionColor }"
+/>
+      <!-- Text display instead of SVG -->
+      <div class="countdown-container">
+        <p class="countdown-text">{{ finalPercentage }}%</p>
+      </div>
+
     </div>
   </div>
 </template>
-
 
 <script>
 export default {
@@ -58,8 +57,10 @@ export default {
       observer: null,
       hasReduced: false,
       textStage: 'initial', // 'initial', 'reducing', 'complete'
+      finalPercentage: 100, // Add this property to control the percentage
     };
   },
+
   mounted() {
     this.generateHerd();
     this.setupIntersectionObserver();
@@ -69,20 +70,28 @@ export default {
   },
 
   watch: {
-  textStage() {
-    this.$nextTick(() => {
-      this.drawBackgroundNoise();
-    });
-  }
-},
-
-
+    textStage() {
+      this.$nextTick(() => {
+        this.drawBackgroundNoise();
+      });
+    }
+  },
 
   beforeUnmount() {
     if (this.observer) {
       this.observer.disconnect();
     }
   },
+  computed: {
+  backgroundTransitionColor() {
+    // Interpolate between green and brown
+    const pct = (100 - this.finalPercentage) / (100 - 62);
+    const r = Math.round(217 + pct * (245 - 217)); // d9 -> f5
+    const g = Math.round(240 + pct * (240 - 240)); // f0 -> f0
+    const b = Math.round(217 + pct * (225 - 217)); // d9 -> e1
+    return `rgb(${r},${g},${b})`;
+  }
+},
   methods: {
     generateHerd() {
       let idCounter = 0;
@@ -105,114 +114,102 @@ export default {
       });
     },
     placeAnimals() {
-  const visualArea = this.$refs.herdVisual;
-  const textBox = this.$refs.herdText;
-  const areaRect = visualArea.getBoundingClientRect();
-  const textRect = textBox.getBoundingClientRect();
+      const visualArea = this.$refs.herdVisual;
+      const textBox = this.$refs.herdText;
+      const areaRect = visualArea.getBoundingClientRect();
+      const textRect = textBox.getBoundingClientRect();
 
-  const maxWidth = areaRect.width;
-  const maxHeight = areaRect.height;
+      const maxWidth = areaRect.width;
+      const maxHeight = areaRect.height;
 
-  // Adjust textRect relative to visualArea
-  const textLeft = textRect.left - areaRect.left;
-  const textTop = textRect.top - areaRect.top;
+      const animalSize = 100; // size of .herd-image (width/height)
+      const padding = 10;
+      const cellSize = animalSize + padding;
 
-  // Add padding around the text box boundary
-  const textPaddingX = 60;
-  const textPaddingY = 90;
+      const textLeft = textRect.left - areaRect.left;
+      const textTop = textRect.top - areaRect.top;
+      const textBoxBounds = {
+        left: textLeft - 60,
+        top: textTop - 90,
+        right: textLeft + textRect.width + 60,
+        bottom: textTop + textRect.height + 60,
+      };
 
-  const textBoxBounds = {
-    left: textLeft - textPaddingX,
-    top: textTop - textPaddingY,
-    right: textLeft + textRect.width + textPaddingX,
-    bottom: textTop + textRect.height + textPaddingY,
-  };
+      const cols = Math.floor(maxWidth / cellSize);
+      const rows = Math.floor(maxHeight / cellSize);
+      const grid = [];
 
-  const placedAnimals = [];
-  const animalSize = 75;
-  const padding = 6;
-  const radius = animalSize / 2 + padding;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const posX = x * cellSize + cellSize / 2;
+          const posY = y * cellSize + cellSize / 2;
 
-  const canPlace = (x, y) => {
-    for (let a of placedAnimals) {
-      const dx = a.x - x;
-      const dy = a.y - y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < radius * 2) return false;
-    }
+          // Check if inside text bounds
+          const overlapsText =
+            posX + animalSize / 2 > textBoxBounds.left &&
+            posX - animalSize / 2 < textBoxBounds.right &&
+            posY + animalSize / 2 > textBoxBounds.top &&
+            posY - animalSize / 2 < textBoxBounds.bottom;
 
-    const animalLeft = x - radius;
-    const animalRight = x + radius;
-    const animalTop = y - radius;
-    const animalBottom = y + radius;
-
-    const overlapsText =
-      animalRight > textBoxBounds.left &&
-      animalLeft < textBoxBounds.right &&
-      animalBottom > textBoxBounds.top &&
-      animalTop < textBoxBounds.bottom;
-
-    return (
-      x > radius &&
-      y > radius &&
-      x < maxWidth - radius &&
-      y < maxHeight - radius &&
-      !overlapsText
-    );
-  };
-
-  const positioned = [];
-
-  for (let animal of this.herd) {
-    let tries = 0;
-    let x, y;
-    do {
-      x = radius + Math.random() * (maxWidth - 2 * radius);
-      y = radius + Math.random() * (maxHeight - 2 * radius);
-      tries++;
-      if (tries > 300) break;
-    } while (!canPlace(x, y));
-
-    placedAnimals.push({ x, y });
-    positioned.push({
-      ...animal,
-      style: {
-        position: "absolute",
-        left: `${x - animalSize / 2}px`,
-        top: `${y - animalSize / 2}px`,
-      },
-    });
-  }
-
-  this.displayedHerd = positioned;
-},
-
-    reduceHerd() {
-      const toRemovePerType = [5, 5, 5, 5, 5, 5, 4, 4];
-      let newHerd = [...this.displayedHerd];
-
-      this.animalTypes.forEach((type, i) => {
-        let removed = 0;
-        newHerd = newHerd.filter((animal) => {
-          if (animal.src === type && removed < toRemovePerType[i]) {
-            removed++;
-            return false;
+          if (!overlapsText) {
+            grid.push({ x: posX, y: posY });
           }
-          return true;
-        });
+        }
+      }
+
+      // Shuffle grid positions
+      for (let i = grid.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [grid[i], grid[j]] = [grid[j], grid[i]];
+      }
+
+      const positioned = this.herd.map((animal, i) => {
+        const pos = grid[i];
+        return {
+          ...animal,
+          style: {
+            position: "absolute",
+            left: `${pos.x - animalSize / 2}px`,
+            top: `${pos.y - animalSize / 2}px`,
+          },
+        };
       });
 
-      this.displayedHerd = newHerd;
-      console.log("Reduced herd count:", this.displayedHerd.length);
+      this.displayedHerd = positioned;
+    },
 
-      // Delay text appearance by 2 seconds after herd reduction
-      setTimeout(() => {
-        this.showText = true;
-      }, 2500);
-      setTimeout(() => {
-        this.textStage = 'complete'; // 👈 Show the final message
-      }, 0);
+    reduceHerd() {
+      const totalToRemove = Math.floor(this.herd.length * 0.38); // 38% of the original herd
+      let remainingToRemove = totalToRemove;
 
+      const interval = setInterval(() => {
+        if (remainingToRemove <= 0 || this.displayedHerd.length <= 0) {
+          clearInterval(interval);
+
+          // When reduction is done, move to the final stage
+          this.textStage = 'complete';
+          return;
+        }
+
+        // Remove one animal at a time
+        this.displayedHerd.splice(Math.floor(Math.random() * this.displayedHerd.length), 1);
+        remainingToRemove--;
+
+        // Update the percentage accordingly
+        const remainingPercent = Math.round((this.displayedHerd.length / this.herd.length) * 100);
+        this.finalPercentage = Math.max(remainingPercent, 62); // Don’t go below 62%
+      }, 100);
+    },
+
+    startCountdown() {
+      const interval = setInterval(() => {
+        if (this.finalPercentage > 62) {
+          this.finalPercentage -= 1; // Decrease the percentage by 1 each interval
+        } else {
+          this.finalPercentage = 62; // Ensure it stays at 62% when reached
+          clearInterval(interval); // Stop the countdown when it reaches 62%
+        }
+      }, 50); // Update every 50ms (for a smoother animation)
     },
 
     drawBackgroundNoise() {
@@ -268,23 +265,25 @@ export default {
             if (entry.isIntersecting && !this.hasReduced) {
               this.hasReduced = true;
               this.textStage = 'reducing'; // 👈 Set middle message when herd starts reducing
+
               setTimeout(() => {
                 this.reduceHerd(); // herd will reduce and then trigger final text
               }, 2500);
             }
+
           });
         },
         {
-          threshold: 0.1,
+          threshold: 0.1, // Trigger when 10% of the component is visible
         }
       );
 
       this.observer.observe(this.$refs.herdArea);
     },
-
   },
 };
 </script>
+
 <style scoped>
 .sheep-cattle-herds {
   position: relative;
@@ -297,7 +296,8 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 0; /* Background canvas stays at the bottom */
+  z-index: 0;
+  /* Background canvas stays at the bottom */
   width: 100%;
   height: 100%;
 }
@@ -308,7 +308,8 @@ export default {
   height: 100%;
   padding: 2rem 2rem 2rem 2rem;
   box-sizing: border-box;
-  z-index: 2; /* Place the padded area above the background */
+  z-index: 2;
+  /* Place the padded area above the background */
 }
 
 .herd-text {
@@ -321,7 +322,8 @@ export default {
   top: 0;
   left: 0;
   padding: 1rem;
-  z-index: 3; /* Place the text above everything else */
+  z-index: 3;
+  /* Place the text above everything else */
   text-align: left;
 }
 
@@ -333,12 +335,18 @@ export default {
 .svg-container {
   transition: opacity 1s ease;
   position: absolute;
-  top: 20%; /* Adjust the position relative to the text */
-  left: 50%; /* Center horizontally */
-  transform: translateX(-50%); /* Center horizontally */
-  opacity: 1; /* Adjust opacity for visibility */
-  z-index: 2; /* Ensure the SVG appears above the background, but below the herd images */
-  width: 95%; /* Set width to desired value */
+  top: 20%;
+  /* Adjust the position relative to the text */
+  left: 50%;
+  /* Center horizontally */
+  transform: translateX(-50%);
+  /* Center horizontally */
+  opacity: 1;
+  /* Adjust opacity for visibility */
+  z-index: 2;
+  /* Ensure the SVG appears above the background, but below the herd images */
+  width: 95%;
+  /* Set width to desired value */
   opacity: 0.75;
 }
 
@@ -347,7 +355,8 @@ export default {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  z-index: 3; /* Ensure the herd images are above the SVG */
+  z-index: 3;
+  /* Ensure the herd images are above the SVG */
 }
 
 .herd-image {
@@ -356,6 +365,41 @@ export default {
   object-fit: contain;
   position: absolute;
   transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.countdown-container {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  color: black;
+  z-index: 2;
+  /* Ensures it is above everything */
+}
+
+.countdown-text {
+  opacity: 0.10;
+  transition: none;
+  text-align: center;
+  font-weight: 700;
+  font-size: 30ch;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  z-index: 1; /* Above canvas, below everything else */
+  transition: background-color 1s linear;
+  pointer-events: none;
 }
 
 </style>

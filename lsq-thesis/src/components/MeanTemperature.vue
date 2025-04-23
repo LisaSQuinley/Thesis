@@ -51,9 +51,6 @@
                     <div class="heatmap-cover" :class="{ hidden: hoveredBlock === column || !showOverlay }">
                         <svg class="spark-overlay"></svg>
                         <div class="cover-message">
-                            <div class="cover-emoji">
-                                <h4>{{ getScenarioInfo(column).emoji }}</h4>
-                            </div>
                             <div class="cover-headings">
                                 <h4>{{ getScenarioInfo(column).title }}</h4>
                                 <h5>{{ getScenarioInfo(column).subtitle }}</h5>
@@ -71,8 +68,6 @@
         </div>
     </div>
 </template>
-
-
 
 <script setup>
 import * as d3 from "d3";
@@ -138,48 +133,41 @@ const filteredProjectedColumnOptions = computed(() =>
 const getScenarioInfo = (columnName) => {
     if (columnName.includes("SSP1-2.6")) {
         return {
-            emoji: "🌱",
-            title: "Green Leap",
+            title: "Kindling Spark",
             subtitle: "Best-Case Scenario",
-            soundBite: "🌿 Too late for the leap — we missed this train.",
-            message: "Aiming high on sustainability, this scenario sees the world making strong progress on cutting emissions, hitting net-zero after 2050. <br>The result? Global warming is likely kept below 2°C by 2100. <br>It’s the climate-friendly path."
+            soundBite: "Too late for the leap — we missed this train.",
+            message: "Aiming high on sustainability, this scenario sees the world making strong progress on cutting emissions, hitting net-zero after 2050. The result? Global warming is likely kept below 2°C by 2100. It’s the climate-friendly path."
         };
     } else if (columnName.includes("SSP2-4.5")) {
         return {
-            emoji: "🌍",
-            title: "Middle Ground",
+            title: "Smoldering Path",
             subtitle: "Business-as-Usual Scenario",
-            soundBite: "🛤️ Still on track — but drifting toward danger.",
-            message: "This is the “do a little, but not too much” path. <br>Emissions stay close to current levels until around mid-century, then slowly decline. <br>Net-zero isn't reached until <i>after</i> 2100. <br>It's a compromise route, with moderate climate action and moderate consequences."
+            soundBite: "Still on track — but drifting toward danger.",
+            message: "This is the “do a little, but not too much” path. Emissions stay close to current levels until around mid-century, then slowly decline. Net-zero isn't reached until after 2100. It's a compromise route, with moderate climate action and moderate consequences."
         };
     } else if (columnName.includes("SSP3-7.0")) {
         return {
-            emoji: "🔥",
-            title: "Divided Drift",
+            title: "Rising Blaze",
             subtitle: "Worsening Scenario",
-            soundBite: "⚠️ Cracks in the system — and no one’s patching them.",
-            message: "In this future, the world is fragmented, with regional tensions and little cooperation. <br>Emissions keep rising, nearly doubling by 2100. <br>Climate action takes a back seat, leading to increasing global risks and instability."
+            soundBite: "Cracks in the system — and no one’s patching them.",
+            message: "In this future, the world is fragmented, with regional tensions and little cooperation. Emissions keep rising, nearly doubling by 2100. Climate action takes a back seat, leading to increasing global risks and instability."
         };
     } else if (columnName.includes("SSP5-8.5")) {
         return {
-            emoji: "💣",
-            title: "Turbocharged Trouble",
+            title: "Inferno Run",
             subtitle: "Worst-Case Scenario",
-            soundBite: "🚨 Pedal to the metal — and no brakes in sight.",
-            message: "Fueled by fossil energy and tech innovation, this path prioritizes economic growth over sustainability. <br>Emissions soar, and radiative forcing reaches the highest levels— it’s the “worst-case” outlook. <br>It's the high-speed lane to extreme climate change."
+            soundBite: "Pedal to the metal — and no brakes in sight.",
+            message: "Fueled by fossil energy and tech innovation, this path prioritizes economic growth over sustainability. Emissions soar, and radiative forcing reaches the highest levels — it’s the “worst-case” outlook. It's the high-speed lane to extreme climate change."
         };
     } else {
         return {
-            emoji: "🤷‍♂️",
-            title: columnName,
+            title: "Unknown Flame",
             subtitle: columnName,
             soundBite: "Unknown path — map not available.",
             message: "Scenario description unavailable."
         };
     }
 };
-
-
 
 watch(selectedColumnGroup, () => {
     const filtered = filteredProjectedColumnOptions.value;
@@ -314,21 +302,21 @@ function renderUnifiedHeatmap(data, svgEl, isLastHeatmap) {
 let sparkTimers = [];
 
 function startSparks() {
-  d3.selectAll('.spark-overlay').each(function () {
-    const svg = d3.select(this);
-    const group = svg.append('g').attr('class', 'spark-group');
-    const timer = createSparks(group, svg.node());
-    sparkTimers.push({ svg, group, timer });
-  });
+    d3.selectAll('.spark-overlay').each(function () {
+        const svg = d3.select(this);
+        const group = svg.append('g').attr('class', 'spark-group');
+        const timer = createSparks(group, svg.node());
+        sparkTimers.push({ svg, group, timer });
+    });
 }
 
 function stopSparks() {
-  // Stop all timers and remove spark elements
-  sparkTimers.forEach(({ group, timer }) => {
-    timer.stop();
-    group.remove();
-  });
-  sparkTimers = [];
+    // Stop all timers and remove spark elements
+    sparkTimers.forEach(({ group, timer }) => {
+        timer.stop();
+        group.remove();
+    });
+    sparkTimers = [];
 }
 
 
@@ -339,35 +327,36 @@ d3.selectAll('.spark-overlay')
         createSparks(sparkGroup, svg.node());
     });
 
-    function createSparks(group, svgNode) {
-  const { width, height } = svgNode.getBoundingClientRect();
+function createSparks(group, svgNode) {
+    const { width, height } = svgNode.getBoundingClientRect();
 
-  function spawnSpark() {
-    const x1 = Math.random() * width;
-    const y1 = Math.random() * height;
-    const x2 = x1 + (Math.random() - 0.5) * 15;
-    const y2 = y1 + (Math.random() - 0.5) * 15;
+    function spawnSpark() {
+        const x1 = Math.random() * width;
+        const y1 = Math.random() * height;
+        const x2 = x1 + (Math.random() - 0.5) * 15;
+        const y2 = y1 + (Math.random() - 0.5) * 15;
 
-    const spark = group.append('path')
-      .attr('d', `M${x1},${y1} L${x2},${y2}`)
-      .attr('stroke', Math.random() < 0.5 ? '#FFFF99' : '#FFFFFF')
+        const spark = group.append('path')
+            .attr('d', `M${x1},${y1} L${x2},${y2}`)
+            .attr('stroke', Math.random() < 0.5 ? '#FFFF99' : '#FFFFFF')
 
-      .attr('stroke-width', 1 + Math.random() * 5)
-      .attr('stroke-dasharray', '5 5')
-      .attr('stroke-dashoffset', 5)
-      .attr('opacity', 1);
+            .attr('stroke-width', 1 + Math.random() * 5)
+            .attr('stroke-dasharray', '5 5')
+            .attr('stroke-dashoffset', 5)
+            .attr('opacity', 1);
 
-    spark.transition()
-      .duration(200)
-      .attr('stroke-dashoffset', 0)
-      .attr('opacity', 0)
-      .remove();
-  }
+        spark.transition()
+            .duration(200)
+            .attr('stroke-dashoffset', 0)
+            .attr('opacity', 0)
+            .remove();
+    }
 
-  // Return the timer so we can stop it later
-  return d3.timer(() => {
-    if (Math.random() < 0.5) spawnSpark();
-  });
+    return d3.timer(() => {
+        for (let i = 0; i < 20; i++) {
+            if (Math.random() < 0.7) spawnSpark(); // increase probability
+        }
+    });
 }
 
 
@@ -426,16 +415,15 @@ onMounted(async () => {
                     setTimeout(() => {
                         showBlocks.value[i] = true;
 
-                        // ⚡ Delay the "spark" effect a bit after each block becomes visible
-                        setTimeout(() => {
-                            const wrapper = wrapperRef.value;
-                            const messages = wrapper.querySelectorAll('.cover-message');
+                        // ✅ Trigger message animation immediately when the block shows
+                        const wrapper = wrapperRef.value;
+                        const messages = wrapper.querySelectorAll('.cover-message');
 
-                            if (messages[i]) {
-                                messages[i].classList.add('sparked');
-                            }
-                        }, 1000); // short delay after showing the block
-                    }, i * 100); // stagger reveal
+                        if (messages[i]) {
+                            messages[i].classList.add('sparked');
+                        }
+                    }, i * 250);
+
                 }
             }
         }, { threshold: 0.3 });
@@ -702,7 +690,7 @@ input:checked+.slider {
     /* Remove any margin pushing the blocks down */
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 1s ease, transform 1s ease;
+    transition: opacity 0s linear, transform 0s linear;
 }
 
 .heatmap-block.visible {
@@ -748,7 +736,7 @@ input:checked+.slider {
 .cover-message {
     opacity: 0;
     transform: scale(0.9);
-    transition: opacity 0.05s ease-in;
+    transition: opacity 0s linear, transform 0s linear;
     display: flex;
     width: 100%;
     flex-direction: row;
@@ -797,11 +785,6 @@ input:checked+.slider {
     background-color: rgb(255, 0, 0);
 }
 
-.cover-emoji {
-    font-size: 3em;
-    display: flex;
-}
-
 h4 {
     text-align: left;
     font-size: 4em;
@@ -810,13 +793,14 @@ h4 {
 
 h5 {
     text-align: left;
-    font-size: 0.8em;
+    font-size: 2.5em;
     margin: 0;
 }
 
 h6 {
+    padding-top: 0.5rem;
     text-align: left;
-    font-size: 0.6em;
+    font-size: 1.5em;
     margin: 0;
 }
 
