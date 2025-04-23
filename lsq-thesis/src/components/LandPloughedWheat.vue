@@ -2,38 +2,42 @@
   <div ref="container" class="land-ploughed-wheat" :style="backgroundStyle">
     <div class="land-bar" :style="{ backgroundColor: landBarColor, height: landBarHeight + '%' }">
     </div>
-<!-- Phase 1 Message Block -->
-<div class="phase-pair phase-pair-88" :class="{ visible: firstPhaseStarted }">
-  <h3 class="title title-88">First Shift: Trimming the Fields</h3>
-  <h4 class="subtitle subtitle-88">2019–2024: Drought hits, but the grind doesn’t stop</h4>
-  <div class="phase-message phase-message-88">
-    <p>We’re cutting back a bit — still growing strong with over 4 million tons of wheat on the way!</p>
-  </div>
-</div>
 
-<!-- Phase 2 Message Block -->
-<div class="phase-pair phase-pair-74" :class="{ visible: secondPhaseStarted }">
-  <h3 class="title title-74">Second Shift: Fields Take a Breather</h3>
-  <h4 class="subtitle subtitle-74">2025: This year's harvest — a tough one, but not the end</h4>
-  <div class="phase-message phase-message-74">
-    <p>Less land, fewer crops — but over 2 million tons still pushing through!</p>
-  </div>
-</div>
+    <!-- Phase 1 Message Block -->
+    <div class="phase-pair phase-pair-88" :class="{ visible: firstPhaseStarted }">
+      <h3 class="title title-88">First Shift: Trimming the Fields</h3>
+      <h4 class="subtitle subtitle-88">2019–2024: Drought hits, but the grind doesn’t stop</h4>
+      <div class="phase-message phase-message-88">
+        <p>We’re cutting back a bit — still growing strong with over 4 million tons of wheat on the way!</p>
+      </div>
+    </div>
 
-<!-- Base Message Block -->
-<div class="phase-pair phase-pair-base visible">
-  <h3 class="base-title">Wheat World: The Land of Plenty</h3>
-  <h4 class="subtitle subtitle-base">2014–2019: Back when the fields were full and rains came easy</h4>
-  <div class="phase-message phase-message-base">
-    <p>Almost 3,000 thousand hectares prepped — over 6 million tons ready to grow!</p>
-  </div>
-</div>
+    <!-- Phase 2 Message Block -->
+    <div class="phase-pair phase-pair-74" :class="{ visible: secondPhaseStarted }">
+      <h3 class="title title-74">Second Shift: Fields Take a Breather</h3>
+      <h4 class="subtitle subtitle-74">2025: This year's harvest — a tough one, but not the end</h4>
+      <div class="phase-message phase-message-74">
+        <p>Less land, fewer crops — but over 2 million tons still pushing through!</p>
+      </div>
+    </div>
+
+    <!-- Base Message Block -->
+    <div class="phase-pair phase-pair-base visible">
+      <h3 class="base-title">Wheat World: The Land of Plenty</h3>
+      <h4 class="subtitle subtitle-base">2014–2019: Back when the fields were full and rains came easy</h4>
+      <div class="phase-message phase-message-base">
+        <p>Almost 3,000 thousand hectares prepped — over 6 million tons ready to grow!</p>
+      </div>
+    </div>
+    
     <div class="wheat-grid">
-      <img v-for="(wheat, index) in wheatImages" :key="index" src="@/assets/wheat.png" alt="Wheat"
+      <!-- Updated image source to wheat.svg -->
+      <img v-for="(wheat, index) in wheatImages" :key="index" src="@/assets/wheat.svg" alt="Wheat"
         :class="{ hidden: isHidden(index) }" />
     </div>
   </div>
 </template>
+
 
 
 
@@ -247,7 +251,7 @@ export default {
 .phase-pair-base {
   opacity: 1;
   transition: opacity 1s ease-in;
-  top: 92%;
+  bottom: 0;
 }
 
 .phase-pair-88 {
@@ -276,18 +280,10 @@ export default {
 }
 
 .phase-message-88,
-.phase-message-74 {
-  padding-bottom: 12px;
-}
-
-.phase-message-base {
-  padding-bottom: 20px;
-}
-
-.phase-message-88,
 .phase-message-74,
 .phase-message-base {
   transform: translateY(0%);
+  padding-bottom: 12px;
 }
 
 .phase-message p {

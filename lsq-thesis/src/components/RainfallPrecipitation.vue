@@ -1,6 +1,6 @@
 <template>
-  <div class="precip-wrapper bar-chart" ref="precipWrapperRef">
-    <h3>Raincheck Forever</h3>
+    <div class="precip-wrapper bar-chart" ref="precipWrapperRef">
+      <h3>Raincheck Forever</h3>
     <div v-for="column in filteredPrecipitationColumns" :key="column" class="bar-chart-block">
       <div class="bar-chart-content">
         <!--         <h4>{{ getDropdownTitle(column) }}</h4> -->
@@ -127,9 +127,9 @@ function renderLegend(unitPerEllipse, svgEl) {
       svg.append("text")
         .attr("x", centerX + 20)
         .attr("y", centerY + 5)
-        .attr("fill", "#333")
-        .attr("font-size", "12px")
-        .text("Trend (Regression Line)");
+        .attr("fill", "#2c3e50")
+        .attr("font-size", "1em")
+        .text("Downward Trend");
     } else {
       // Add raindrop legend
       svg.append("path")
@@ -140,8 +140,8 @@ function renderLegend(unitPerEllipse, svgEl) {
       svg.append("text")
         .attr("x", centerX + 15)
         .attr("y", centerY + 5)
-        .attr("fill", "#333")
-        .attr("font-size", "12px")
+        .attr("fill", "#2c3e50")
+        .attr("font-size", "1em")
         .text(`${type === "historical" ? "Past" : "Future"}: 1 raindrop = ${Math.round(unitPerEllipse)} mm`);
     }
   });
@@ -461,21 +461,30 @@ body,
 }
 
 .precip-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
   padding: 4rem 5rem 5rem 5rem;
   overflow: auto;
-  /* Allow scrolling */
   opacity: 0;
-  /* Initially hidden */
   transition: opacity 1s ease-in-out;
 }
 
 .precip-wrapper.in-view {
   opacity: 1;
   /* Fade in when in view */
+}
+
+.precip-wrapper h3 {
+  position: absolute;
+  top: 6.5rem;
+  left: 12rem;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: bold;
+  z-index: 1;
 }
 
 .bar-chart {
@@ -501,8 +510,7 @@ body,
 .legend {
   position: absolute;
   top: 2.5rem;
-  /* Adjust as needed */
-  left: 4.5rem;
+  right: 5%;
   padding-left: 1rem;
   z-index: 2;
   pointer-events: none;
@@ -519,4 +527,5 @@ svg {
 .y-axis {
   font-size: 0.75em;
 }
+
 </style>

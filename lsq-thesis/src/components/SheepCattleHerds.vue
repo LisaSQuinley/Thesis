@@ -30,6 +30,10 @@
           :style="animal.style"
         />
       </div>
+<!-- Conditionally render the SVG when the complete animation happens -->
+<div v-if="textStage === 'complete'" class="svg-container">
+  <img src="@/assets/thirty-eight.svg" alt="Thirty Eight" ref="svgImage" />
+</div>
     </div>
   </div>
 </template>
@@ -101,88 +105,87 @@ export default {
       });
     },
     placeAnimals() {
-      const visualArea = this.$refs.herdVisual;
-      const textBox = this.$refs.herdText;
-      const areaRect = visualArea.getBoundingClientRect();
-      const textRect = textBox.getBoundingClientRect();
+  const visualArea = this.$refs.herdVisual;
+  const textBox = this.$refs.herdText;
+  const areaRect = visualArea.getBoundingClientRect();
+  const textRect = textBox.getBoundingClientRect();
 
-      const maxWidth = areaRect.width;
-      const maxHeight = areaRect.height;
+  const maxWidth = areaRect.width;
+  const maxHeight = areaRect.height;
 
-      // Adjust textRect relative to visualArea
-      const textLeft = textRect.left - areaRect.left;
-      const textTop = textRect.top - areaRect.top;
+  // Adjust textRect relative to visualArea
+  const textLeft = textRect.left - areaRect.left;
+  const textTop = textRect.top - areaRect.top;
 
-      // Add padding around the text box boundary
-      const textPaddingX = 60;
-      const textPaddingY = 60;
+  // Add padding around the text box boundary
+  const textPaddingX = 60;
+  const textPaddingY = 90;
 
-      const textBoxBounds = {
-        left: textLeft - textPaddingX,
-        top: textTop - textPaddingY,
-        right: textLeft + textRect.width + textPaddingX,
-        bottom: textTop + textRect.height + textPaddingY,
-      };
+  const textBoxBounds = {
+    left: textLeft - textPaddingX,
+    top: textTop - textPaddingY,
+    right: textLeft + textRect.width + textPaddingX,
+    bottom: textTop + textRect.height + textPaddingY,
+  };
 
-      const placedAnimals = [];
-      const animalSize = 75;
-      const padding = 6;
-      const radius = animalSize / 2 + padding;
+  const placedAnimals = [];
+  const animalSize = 75;
+  const padding = 6;
+  const radius = animalSize / 2 + padding;
 
-      const canPlace = (x, y) => {
-        for (let a of placedAnimals) {
-          const dx = a.x - x;
-          const dy = a.y - y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < radius * 2) return false;
-        }
-
-        const animalLeft = x - radius;
-        const animalRight = x + radius;
-        const animalTop = y - radius;
-        const animalBottom = y + radius;
-
-        const overlapsText =
-          animalRight > textBoxBounds.left &&
-          animalLeft < textBoxBounds.right &&
-          animalBottom > textBoxBounds.top &&
-          animalTop < textBoxBounds.bottom;
-
-        return (
-          x > radius &&
-          y > radius &&
-          x < maxWidth - radius &&
-          y < maxHeight - radius &&
-          !overlapsText
-        );
-      };
-
-      const positioned = [];
-
-      for (let animal of this.herd) {
-        let tries = 0;
-        let x, y;
-        do {
-          x = radius + Math.random() * (maxWidth - 2 * radius);
-          y = radius + Math.random() * (maxHeight - 2 * radius);
-          tries++;
-          if (tries > 300) break;
-        } while (!canPlace(x, y));
-
-        placedAnimals.push({ x, y });
-        positioned.push({
-          ...animal,
-          style: {
-            position: "absolute",
-            left: `${x - animalSize / 2}px`,
-            top: `${y - animalSize / 2}px`,
-          },
-        });
-      }
-
-      this.displayedHerd = positioned;
+  const canPlace = (x, y) => {
+    for (let a of placedAnimals) {
+      const dx = a.x - x;
+      const dy = a.y - y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < radius * 2) return false;
     }
-    ,
+
+    const animalLeft = x - radius;
+    const animalRight = x + radius;
+    const animalTop = y - radius;
+    const animalBottom = y + radius;
+
+    const overlapsText =
+      animalRight > textBoxBounds.left &&
+      animalLeft < textBoxBounds.right &&
+      animalBottom > textBoxBounds.top &&
+      animalTop < textBoxBounds.bottom;
+
+    return (
+      x > radius &&
+      y > radius &&
+      x < maxWidth - radius &&
+      y < maxHeight - radius &&
+      !overlapsText
+    );
+  };
+
+  const positioned = [];
+
+  for (let animal of this.herd) {
+    let tries = 0;
+    let x, y;
+    do {
+      x = radius + Math.random() * (maxWidth - 2 * radius);
+      y = radius + Math.random() * (maxHeight - 2 * radius);
+      tries++;
+      if (tries > 300) break;
+    } while (!canPlace(x, y));
+
+    placedAnimals.push({ x, y });
+    positioned.push({
+      ...animal,
+      style: {
+        position: "absolute",
+        left: `${x - animalSize / 2}px`,
+        top: `${y - animalSize / 2}px`,
+      },
+    });
+  }
+
+  this.displayedHerd = positioned;
+},
 
     reduceHerd() {
       const toRemovePerType = [5, 5, 5, 5, 5, 5, 4, 4];
@@ -235,7 +238,7 @@ export default {
       // 🌱 Green for initial, dry brown for reducing
       canvas.style.backgroundColor = isReducing ? '#d9f0d9' : '#f5f0e1';
 
-      const bladeCount = 7000;
+      const bladeCount = 10000;
       for (let i = 0; i < bladeCount; i++) {
         const x = Math.random() * width;
         const y = Math.random() * height;
@@ -282,11 +285,7 @@ export default {
   },
 };
 </script>
-
 <style scoped>
-h3 {
-  margin-bottom: 1rem;
-}
 .sheep-cattle-herds {
   position: relative;
   width: calc(100vw - 11rem);
@@ -298,7 +297,7 @@ h3 {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 0;
+  z-index: 0; /* Background canvas stays at the bottom */
   width: 100%;
   height: 100%;
 }
@@ -309,7 +308,7 @@ h3 {
   height: 100%;
   padding: 2rem 2rem 2rem 2rem;
   box-sizing: border-box;
-  z-index: 1;
+  z-index: 2; /* Place the padded area above the background */
 }
 
 .herd-text {
@@ -319,11 +318,11 @@ h3 {
   visibility: hidden;
   transition: opacity 1s ease, visibility 1s ease;
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  text-align: center;
+  top: 0;
+  left: 0;
+  padding: 1rem;
+  z-index: 3; /* Place the text above everything else */
+  text-align: left;
 }
 
 .herd-text.visible {
@@ -331,11 +330,24 @@ h3 {
   visibility: visible;
 }
 
+.svg-container {
+  transition: opacity 1s ease;
+  position: absolute;
+  top: 20%; /* Adjust the position relative to the text */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center horizontally */
+  opacity: 1; /* Adjust opacity for visibility */
+  z-index: 2; /* Ensure the SVG appears above the background, but below the herd images */
+  width: 95%; /* Set width to desired value */
+  opacity: 0.75;
+}
+
 .herd-visual-area {
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
+  z-index: 3; /* Ensure the herd images are above the SVG */
 }
 
 .herd-image {
