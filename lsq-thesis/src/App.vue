@@ -46,13 +46,13 @@ export default {
     return {
       steps: [
         'HelloMorocco',
-        'MoroccoMapView',
+        'INFORMRiskIndex',
         'RainfallPrecipitation',
         'MeanTemperature',
         'SheepCattleHerds',
         'LandPloughedWheat',
         'CopingMechanisms',
-        'INFORMRiskIndex',
+        'MoroccoMapView',
         'WorldMapViewTimeline',
       ],
       activeStep: 0, // Start from 0

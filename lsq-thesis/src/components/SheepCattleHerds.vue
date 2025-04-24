@@ -25,10 +25,7 @@
         <img v-for="(animal) in displayedHerd" :key="animal.id" :src="require(`@/assets/herds/${animal.src}`)"
           class="herd-image" :style="animal.style" />
       </div>
-      <div
-  class="background-overlay"
-  :style="{ backgroundColor: backgroundTransitionColor }"
-/>
+      <div class="background-overlay" :style="{ backgroundColor: backgroundTransitionColor }" />
       <!-- Text display instead of SVG -->
       <div class="countdown-container">
         <p class="countdown-text">{{ finalPercentage }}%</p>
@@ -83,15 +80,15 @@ export default {
     }
   },
   computed: {
-  backgroundTransitionColor() {
-    // Interpolate between green and brown
-    const pct = (100 - this.finalPercentage) / (100 - 62);
-    const r = Math.round(217 + pct * (245 - 217)); // d9 -> f5
-    const g = Math.round(240 + pct * (240 - 240)); // f0 -> f0
-    const b = Math.round(217 + pct * (225 - 217)); // d9 -> e1
-    return `rgb(${r},${g},${b})`;
-  }
-},
+    backgroundTransitionColor() {
+      // Interpolate between green and brown
+      const pct = (100 - this.finalPercentage) / (100 - 62);
+      const r = Math.round(217 + pct * (245 - 217)); // d9 -> f5
+      const g = Math.round(240 + pct * (240 - 240)); // f0 -> f0
+      const b = Math.round(217 + pct * (225 - 217)); // d9 -> e1
+      return `rgb(${r},${g},${b})`;
+    }
+  },
   methods: {
     generateHerd() {
       let idCounter = 0;
@@ -397,9 +394,9 @@ export default {
   width: 100%;
   height: 100%;
   opacity: 0.5;
-  z-index: 1; /* Above canvas, below everything else */
+  z-index: 1;
+  /* Above canvas, below everything else */
   transition: background-color 1s linear;
   pointer-events: none;
 }
-
 </style>

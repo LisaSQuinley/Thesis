@@ -135,28 +135,28 @@ const getScenarioInfo = (columnName) => {
         return {
             title: "Kindling Spark",
             subtitle: "Best-Case Scenario",
-            soundBite: "Too late for the leap — we missed this train.",
+            soundBite: "The fire’s just a flicker — we nearly snuffed it out.",
             message: "Aiming high on sustainability, this scenario sees the world making strong progress on cutting emissions, hitting net-zero after 2050. The result? Global warming is likely kept below 2°C by 2100. It’s the climate-friendly path."
         };
     } else if (columnName.includes("SSP2-4.5")) {
         return {
             title: "Smoldering Path",
             subtitle: "Business-as-Usual Scenario",
-            soundBite: "Still on track — but drifting toward danger.",
+            soundBite: "The coals still burn — slow heat, rising risk.",
             message: "This is the “do a little, but not too much” path. Emissions stay close to current levels until around mid-century, then slowly decline. Net-zero isn't reached until after 2100. It's a compromise route, with moderate climate action and moderate consequences."
         };
     } else if (columnName.includes("SSP3-7.0")) {
         return {
             title: "Rising Blaze",
             subtitle: "Worsening Scenario",
-            soundBite: "Cracks in the system — and no one’s patching them.",
+            soundBite: "The flames are spreading — no one’s tending the line.",
             message: "In this future, the world is fragmented, with regional tensions and little cooperation. Emissions keep rising, nearly doubling by 2100. Climate action takes a back seat, leading to increasing global risks and instability."
         };
     } else if (columnName.includes("SSP5-8.5")) {
         return {
             title: "Inferno Run",
             subtitle: "Worst-Case Scenario",
-            soundBite: "Pedal to the metal — and no brakes in sight.",
+            soundBite: "The firestorm roars — and we lit the match.",
             message: "Fueled by fossil energy and tech innovation, this path prioritizes economic growth over sustainability. Emissions soar, and radiative forcing reaches the highest levels — it’s the “worst-case” outlook. It's the high-speed lane to extreme climate change."
         };
     } else {
@@ -789,12 +789,14 @@ h4 {
     text-align: left;
     font-size: 4em;
     margin: 0;
+    line-height: 1;
 }
 
 h5 {
     text-align: left;
     font-size: 2.5em;
     margin: 0;
+    line-height: 1.25;
 }
 
 h6 {
