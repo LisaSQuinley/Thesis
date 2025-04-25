@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h3 class="main-title">INFORM Risk 2025</h3>
+    <h3 class="main-title">On the Global Map - INFORM Risk</h3>
     <div class="content">
       <!-- Leaflet Map -->
       <div class="map-container">
@@ -16,31 +16,14 @@
             </template>
           </l-geo-json>
         </l-map>
-
-        <div v-if="riskColumn.value === 'inform_risk'" class="map-overlay-message">
-          <p>What is the INFORM Risk Index?
-            INFORM started in 2012 when groups like the UN, charities, and researchers teamed up to better understand
-            where disasters might happen, and which countries might need the most help.
-            The INFORM Risk Index looks at which countries are most at risk of big problems—like natural disasters or
-            conflicts—that could lead to a crisis. It focuses on three main things:
-            1. Hazards & Exposure
-            2. Vulnerability
-            3. Lack of Coping Capacity
-            The goal is to use this information to plan, send help where it’s needed most, and try to stop disasters
-            from becoming even worse.
-          </p>
-        </div>
       </div>
 
       <!-- INFORM Risk Index Chart -->
       <div class="chart-container">
         <div class="column-info">
           <h4>
-            {{selectedCountries.length > 0
-              ? selectedCountries.map(c => c.properties.SOVEREIGNT).join(", ")
-              : "" }}
+            {{ selectedCountries.length === 1 ? selectedCountries[0].properties.SOVEREIGNT : "" }}
           </h4>
-
         </div>
         <div id="INFORM-chart" class="multi-chart-container"></div>
       </div>
@@ -84,8 +67,8 @@ const handleCountryClick = (event, feature) => {
     // Deselect the country
     selectedCountries.value.splice(alreadySelectedIndex, 1);
   } else {
-    if (selectedCountries.value.length >= 5) {
-      alert("You can only select up to 5 countries.");
+    if (selectedCountries.value.length >= 10) {
+      alert("You can only select up to 10 countries.");
       return;
     }
     selectedCountries.value.push(feature);
@@ -94,10 +77,13 @@ const handleCountryClick = (event, feature) => {
   geoJsonData.value = { ...geoJsonData.value }; // trigger reactivity
 
   if (selectedCountries.value.length === 0) {
-  createChart(chartData.value);
-} else {
-  createCountryCharts(selectedCountries.value.map(c => c.properties));
-}
+    createChart(chartData.value);
+  } else if (selectedCountries.value.length === 1) {
+    createCountryCharts(selectedCountries.value.map(c => c.properties));
+  } else {
+    createMultiCountryCharts(selectedCountries.value.map(c => c.properties));
+  }
+
 
   console.log("Selected countries:", selectedCountries.value.map(f => f.properties.SOVEREIGNT));
 };
@@ -290,11 +276,11 @@ const createChart = (data) => {
 
 const createCountryChart = (country) => {
   const chartContainer = d3.select("#INFORM-chart")
-  .append("div")
-  .attr("class", "country-chart");
+    .append("div")
+    .attr("class", "country-chart");
 
 
-  const margin = { top: 40, right: 30, bottom: 40, left: 195 };
+  const margin = { top: 27, right: 30, bottom: 40, left: 195 };
   const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
   const barHeight = 30;
   const keys = [
@@ -318,11 +304,11 @@ const createCountryChart = (country) => {
     .range([0, svgHeight - margin.top - margin.bottom])
     .padding(0.1);
 
-    const svg = chartContainer.append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", svgHeight)
-  .append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
+  const svg = chartContainer.append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", svgHeight)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
 
   svg.selectAll(".bar")
@@ -348,12 +334,92 @@ const createCountryChart = (country) => {
     .attr("y", d => y(d.label) + y.bandwidth() / 2)
     .attr("dy", ".35em")
     .text(d => d.value.toFixed(1))
-    .style("fill", "black")
+    .style("fill", "#2c3e50;")
     .style("font-size", "12px")
     .style("font-weight", "bold");
 
   svg.append("g").attr("class", "x-axis").call(d3.axisTop(x));
   svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+};
+
+const createMultiCountryCharts = (countries) => {
+  d3.select("#INFORM-chart").selectAll("svg").remove();
+
+  const keys = [
+    { key: "inform_risk", label: "INFORM Risk" },
+    { key: "vulnerability", label: "Vulnerability" },
+    { key: "hazard_and_exposure", label: "Hazard & Exposure" },
+    { key: "lack_of_coping_capacity", label: "Lack of Coping Capacity" }
+  ];
+
+  const margin = { top: 50, right: 30, bottom: 40, left: 195 };
+  const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
+  const barHeight = 30;
+  const svgHeight = countries.length * barHeight + margin.top + margin.bottom;
+
+  keys.forEach(({ key, label }) => {
+    const data = countries.map((c) => ({
+      country: c.SOVEREIGNT,
+      value: +c[key],
+      color: colorScale(c[key])
+    }));
+
+    const x = d3.scaleLinear().domain([0, 10]).range([0, width]).nice();
+    const y = d3.scaleBand()
+      .domain(data.map(d => d.country))
+      .range([0, svgHeight - margin.top - margin.bottom])
+      .padding(0.1);
+
+    const svg = d3.select("#INFORM-chart")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", svgHeight)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Title
+    svg.append("text")
+      .attr("x", (width + margin.left + margin.right) / 2 - margin.left)
+      .attr("y", -30)
+      .attr("text-anchor", "middle")
+      .text(label)
+      .attr("font-size", "16px")
+      .attr("fill", "#2c3e50")
+      .attr("font-weight", "bold")
+
+    // Bars
+    svg.selectAll(".bar")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("y", d => y(d.country))
+      .attr("height", y.bandwidth())
+      .attr("x", 0)
+      .attr("fill", d => d.color)
+      .attr("width", 0)
+      .transition()
+      .duration(800)
+      .attr("width", d => x(d.value));
+
+    // Labels
+    svg.selectAll(".bar-text")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("class", "bar-text")
+      .attr("x", d => x(d.value) + 5)
+      .attr("y", d => y(d.country) + y.bandwidth() / 2)
+      .attr("dy", ".35em")
+      .text(d => d.value.toFixed(1))
+      .style("fill", "black")
+      .style("font-size", "12px")
+      .style("font-weight", "bold");
+
+    // Axes
+    svg.append("g").attr("class", "x-axis").call(d3.axisTop(x));
+    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+  });
 };
 
 
@@ -471,6 +537,7 @@ h3 {
 }
 
 .country-info h4 {
+  color: #2c3e50;
   margin-bottom: 10px;
 }
 
