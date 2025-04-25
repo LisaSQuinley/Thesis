@@ -120,7 +120,7 @@ export default {
       const maxHeight = areaRect.height;
 
       const animalSize = 100; // size of .herd-image (width/height)
-      const padding = 10;
+      const padding = 5;
       const cellSize = animalSize + padding;
 
       const textLeft = textRect.left - areaRect.left;

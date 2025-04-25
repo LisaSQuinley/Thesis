@@ -1,55 +1,3 @@
-<template>
-  <div class="container">
-    <h3 class="main-title">INFORM Risk 2025</h3>
-    <div class="content">
-      <!-- Leaflet Map -->
-      <div class="map-container">
-        <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
-          <l-tile-layer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" layer-type="base"
-            attribution="OpenStreetMap | contributors: CartoDB" subdomains="abcd"></l-tile-layer>
-          <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle" :options="geoJsonOptions">
-            <template #popup="{ feature }">
-              <l-popup>
-                <strong>{{ feature.properties.name }}</strong><br>
-                Risk Level: {{ feature.properties[riskColumn.value] || "N/A" }}
-              </l-popup>
-            </template>
-          </l-geo-json>
-        </l-map>
-
-        <div v-if="riskColumn.value === 'inform_risk'" class="map-overlay-message">
-          <p>What is the INFORM Risk Index?
-            INFORM started in 2012 when groups like the UN, charities, and researchers teamed up to better understand
-            where disasters might happen, and which countries might need the most help.
-            The INFORM Risk Index looks at which countries are most at risk of big problems—like natural disasters or
-            conflicts—that could lead to a crisis. It focuses on three main things:
-            1. Hazards & Exposure
-            2. Vulnerability
-            3. Lack of Coping Capacity
-            The goal is to use this information to plan, send help where it’s needed most, and try to stop disasters
-            from becoming even worse.
-          </p>
-        </div>
-      </div>
-
-      <!-- INFORM Risk Index Chart -->
-      <div class="chart-container">
-        <div class="column-info">
-          <h4>
-            {{selectedCountries.length > 0
-              ? selectedCountries.map(c => c.properties.SOVEREIGNT).join(", ")
-              : "" }}
-          </h4>
-
-        </div>
-        <div id="INFORM-chart" class="multi-chart-container"></div>
-      </div>
-    </div>
-  </div>
-</template>
-
-
-
 <script setup>
 import { onMounted, ref, watch, onBeforeUnmount } from "vue";
 import * as d3 from "d3";
@@ -62,63 +10,16 @@ const chartData = ref([]);
 const sortMethod = ref("alphabetical");
 const riskColumn = ref("inform_risk");
 const windowWidth = ref(window.innerWidth);
-const selectedCountries = ref([]);
-
-let riskData = [];
-
-const geoJsonOptions = {
-  onEachFeature: (feature, layer) => {
-    layer.on({
-      click: (e) => handleCountryClick(e, feature) // Pass the feature explicitly
-    });
-  }
-};
-
-const handleCountryClick = (event, feature) => {
-  const countryName = feature.properties.SOVEREIGNT;
-  const alreadySelectedIndex = selectedCountries.value.findIndex(
-    (c) => c.properties.SOVEREIGNT === countryName
-  );
-
-  if (alreadySelectedIndex !== -1) {
-    // Deselect the country
-    selectedCountries.value.splice(alreadySelectedIndex, 1);
-  } else {
-    if (selectedCountries.value.length >= 5) {
-      alert("You can only select up to 5 countries.");
-      return;
-    }
-    selectedCountries.value.push(feature);
-  }
-
-  geoJsonData.value = { ...geoJsonData.value }; // trigger reactivity
-
-  if (selectedCountries.value.length === 0) {
-  createChart(chartData.value);
-} else {
-  createCountryCharts(selectedCountries.value.map(c => c.properties));
-}
-
-  console.log("Selected countries:", selectedCountries.value.map(f => f.properties.SOVEREIGNT));
-};
-
-const createCountryCharts = (countries) => {
-  d3.select("#INFORM-chart").selectAll("svg").remove();
-  countries.forEach(country => {
-    createCountryChart(country);
-  });
-};
-
 
 const handleResize = () => {
   windowWidth.value = window.innerWidth;
-  createChart(chartData.value);
+  createChart(chartData.value); // Recreate the chart with the new width
 };
 
 onMounted(() => {
   window.addEventListener("resize", handleResize);
   loadGeoJsonMap();
-  createChart(chartData.value);
+  createChart(chartData.value); // Create the chart initially with the loaded data
 });
 
 onBeforeUnmount(() => {
@@ -131,14 +32,11 @@ const colorScale = d3.scaleThreshold()
 
 const geoJsonStyle = (feature) => {
   const riskValue = feature.properties[riskColumn.value];
-  const isSelected = selectedCountries.value.some(
-    (c) => c.properties.SOVEREIGNT === feature.properties.SOVEREIGNT
-  );
   return {
     fillColor: riskValue !== null && riskValue !== undefined ? colorScale(riskValue) : "#D3D3D3",
-    weight: isSelected ? 3 : 0.5,
+    weight: 0.5,
     opacity: 1,
-    color: isSelected ? "black" : "gray",
+    color: "black",
     fillOpacity: 1
   };
 };
@@ -146,7 +44,7 @@ const geoJsonStyle = (feature) => {
 const loadGeoJsonMap = async () => {
   try {
     const data = await d3.csv("./data/INFORM_Risk_2025_v069_index.csv");
-    riskData = data.map(row => {
+    const riskData = data.map(row => {
       let normalizedRow = {};
       for (const [key, value] of Object.entries(row)) {
         const normalizedKey = key.toLowerCase().replace(/\s+/g, "_").replace(/&/g, "and");
@@ -288,73 +186,7 @@ const createChart = (data) => {
   svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
 };
 
-const createCountryChart = (country) => {
-  const chartContainer = d3.select("#INFORM-chart")
-  .append("div")
-  .attr("class", "country-chart");
 
-
-  const margin = { top: 40, right: 30, bottom: 40, left: 195 };
-  const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
-  const barHeight = 30;
-  const keys = [
-    { key: "inform_risk", label: "INFORM Risk" },
-    { key: "vulnerability", label: "Vulnerability" },
-    { key: "hazard_and_exposure", label: "Hazard & Exposure" },
-    { key: "lack_of_coping_capacity", label: "Lack of Coping Capacity" }
-  ];
-
-  const data = keys.map(d => ({
-    label: d.label,
-    value: +country[d.key],
-    color: colorScale(country[d.key])
-  }));
-
-  const svgHeight = data.length * barHeight + margin.top + margin.bottom;
-
-  const x = d3.scaleLinear().domain([0, 10]).range([0, width]).nice();
-  const y = d3.scaleBand()
-    .domain(data.map(d => d.label))
-    .range([0, svgHeight - margin.top - margin.bottom])
-    .padding(0.1);
-
-    const svg = chartContainer.append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", svgHeight)
-  .append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
-
-
-  svg.selectAll(".bar")
-    .data(data)
-    .enter()
-    .append("rect")
-    .attr("class", "bar")
-    .attr("y", d => y(d.label))
-    .attr("x", 0)
-    .attr("height", y.bandwidth())
-    .attr("fill", d => d.color)
-    .attr("width", 0)
-    .transition()
-    .duration(1000)
-    .attr("width", d => x(d.value));
-
-  svg.selectAll(".bar-text")
-    .data(data)
-    .enter()
-    .append("text")
-    .attr("class", "bar-text")
-    .attr("x", d => x(d.value) + 5)
-    .attr("y", d => y(d.label) + y.bandwidth() / 2)
-    .attr("dy", ".35em")
-    .text(d => d.value.toFixed(1))
-    .style("fill", "black")
-    .style("font-size", "12px")
-    .style("font-weight", "bold");
-
-  svg.append("g").attr("class", "x-axis").call(d3.axisTop(x));
-  svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
-};
 
 
 watch(riskColumn, () => {
@@ -372,27 +204,104 @@ watch(riskColumn, () => {
   }
 });
 
+
+// Watch for changes to sortMethod and update the chart
 watch(sortMethod, () => {
   createChart(chartData.value); // Recreate the chart with the new sort method
 });
 
+// Watch for changes to chartData and update the chart
 watch(chartData, (newData) => {
   if (newData.length > 0) {
     createChart(newData);
   }
 });
+
 </script>
+
+
+
+<template>
+  <div class="container">
+    <h3 class="main-title">INFORM Risk 2025</h3>
+
+    <!-- Filter Controls (Radio buttons) -->
+    <div class="filter-controls">
+      <label>
+        <input type="radio" v-model="riskColumn" value="inform_risk" /> INFORM Risk Index
+      </label>
+      <label>
+        <input type="radio" v-model="riskColumn" value="hazard_and_exposure" /> Hazard & Exposure
+      </label>
+      <label>
+        <input type="radio" v-model="riskColumn" value="vulnerability" /> Vulnerability
+      </label>
+      <label>
+        <input type="radio" v-model="riskColumn" value="lack_of_coping_capacity" /> Lack of Coping Capacity
+      </label>
+    </div>
+
+    <!-- Sorting Controls (Radio buttons) -->
+    <div class="sort-controls">
+      <label>
+        <input type="radio" v-model="sortMethod" value="alphabetical" /> Alphabetical
+      </label>
+      <label>
+        <input type="radio" v-model="sortMethod" value="ascending" /> Ascending
+      </label>
+      <label>
+        <input type="radio" v-model="sortMethod" value="descending" /> Descending
+      </label>
+    </div>
+
+    <div class="content">
+<!-- Leaflet Map -->
+<div class="map-container">
+  <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
+    <l-tile-layer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" layer-type="base"
+      attribution="OpenStreetMap | contributors: CartoDB" subdomains="abcd"></l-tile-layer>
+
+    <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle">
+      <template #popup="{ feature }">
+        <l-popup>
+          <strong>{{ feature.properties.name }}</strong><br>
+          Risk Level: {{ feature.properties[riskColumn.value] || "N/A" }}
+        </l-popup>
+      </template>
+    </l-geo-json>
+  </l-map>
+
+  <!-- 📌 Overlay message div goes here -->
+  <div v-if="riskColumn === 'inform_risk'" class="map-overlay-message">
+    <p>What is the INFORM Risk Index?
+INFORM started in 2012 when groups like the UN, charities, and researchers teamed up to better understand where disasters might happen, and which countries might need the most help.
+The INFORM Risk Index looks at which countries are most at risk of big problems—like natural disasters or conflicts—that could lead to a crisis. It focuses on three main things:
+1.	Hazards & Exposure
+2.	Vulnerability
+3.	Lack of Coping Capacity
+The goal is to use this information to plan, send help where it’s needed most, and try to stop disasters from becoming even worse.
+</p>
+  </div>
+</div>
+
+      <!-- INFORM Risk Index Chart -->
+      <div class="chart-container">
+        <div id="INFORM-chart"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
 
 <style scoped>
 /* Layout */
 .container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  /* Fill the height of parent instead of viewport */
+  height: 100%; /* Fill the height of parent instead of viewport */
   width: 100%;
-  box-sizing: border-box;
-  /* Respect parent padding if any */
+  box-sizing: border-box; /* Respect parent padding if any */
   padding: 4rem 5rem 5rem 5rem;
 }
 
@@ -402,15 +311,19 @@ watch(chartData, (newData) => {
   margin: 10px 0;
 }
 
+.filter-controls,
+.sort-controls {
+  text-align: center;
+  margin: 5px 0;
+}
+
 .content {
-  flex: 1;
-  /* Take up the remaining space */
+  flex: 1; /* Take up the remaining space */
   display: flex;
   justify-content: space-between;
   align-items: stretch;
   width: 100%;
-  overflow: hidden;
-  /* Prevent content from spilling */
+  overflow: hidden; /* Prevent content from spilling */
 }
 
 /* Map container */
@@ -463,18 +376,4 @@ h3 {
   z-index: 999;
 }
 
-.country-info {
-  margin-top: 20px;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-}
-
-.country-info h4 {
-  margin-bottom: 10px;
-}
-
-.country-info p {
-  margin: 5px 0;
-}
 </style>

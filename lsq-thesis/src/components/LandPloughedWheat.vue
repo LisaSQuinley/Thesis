@@ -1,68 +1,75 @@
 <template>
   <div ref="container" class="land-ploughed-wheat" :style="backgroundStyle">
-    <!-- Base Message Block -->
-    <div class="phase-pair phase-pair-base visible" :class="{ 'fade-in': firstPhaseStarted }">
-      <div class="text-block">
-        <h3 class="base-title">The Feast Before the Flame</h3>
-        <h4 class="subtitle subtitle-base">2014–2019: When rains were kind and wheat flowed freely</h4>
-        <div class="phase-message phase-message-base">
-          <p>Almost 3,000 thousand hectares prepped — over 6 million tons ready to grow!</p>
-        </div>
-      </div>
-      <div class="wheat-grid">
-        <img v-for="index in wheatBaseCount" :key="index" :src="require(`@/assets/wheat/wheat-base.svg`)" alt="Wheat"
-          :style="{ width: imageSize + 'px', height: 'auto' }" />
-      </div>
+<!-- Base Message Block -->
+<div class="phase-pair phase-pair-base visible" :class="{ 'fade-in': firstPhaseStarted }">
+  <div class="text-block">
+    <h3 class="base-title">The Feast Before the Flame</h3>
+    <h4 class="subtitle subtitle-base">2014–2019: When rains were kind and wheat flowed freely</h4>
+    <div class="phase-message phase-message-base">
+      <p>Almost 3,000 thousand hectares prepped — over 6 million tons ready to grow!</p>
     </div>
+  </div>
+  <div class="wheat-field">
+    <div class="wheat-grid">
+      <img v-for="index in wheatBaseCount" :key="index" :src="require(`@/assets/wheat/wheat-base.svg`)" alt="Wheat"
+        :style="{ width: imageSize + 'px', height: 'auto' }" />
+    </div>
+  </div>
+</div>
 
-    <!-- Phase 1 Message Block -->
-    <div class="phase-pair phase-pair-88" :class="{ 'fade-in': firstPhaseStarted }">
-      <div class="text-block">
-        <h3 class="title title-88">Scorched Rhythm</h3>
-        <h4 class="subtitle subtitle-88">2019–2024: Drought tested our resolve, but the harvest held</h4>
-        <div class="phase-message phase-message-88">
-          <p>We’re cutting back a bit — still growing strong with over 4 million tons of wheat on the way!</p>
-        </div>
-      </div>
-      <div class="wheat-grid">
-        <img v-for="index in wheat69Count" :key="index" :src="require(`@/assets/wheat/wheat-69.svg`)" alt="Wheat-69"
-          :style="{ width: imageSize + 'px', height: 'auto' }" />
-      </div>
+<!-- Phase 1 Message Block -->
+<div class="phase-pair phase-pair-88" :class="{ 'fade-in': firstPhaseStarted }">
+  <div class="text-block">
+    <h3 class="title title-88">Scorched Rhythm</h3>
+    <h4 class="subtitle subtitle-88">2019–2024: Drought tested our resolve, but the harvest held</h4>
+    <div class="phase-message phase-message-88">
+      <p>We’re cutting back a bit — still growing strong with over 4 million tons of wheat on the way!</p>
     </div>
+  </div>
+  <div class="wheat-field">
+    <div class="wheat-grid">
+      <img v-for="index in wheat69Count" :key="index" :src="require(`@/assets/wheat/wheat-69.svg`)" alt="Wheat-69"
+        :style="{ width: imageSize + 'px', height: 'auto' }" />
+    </div>
+  </div>
+</div>
 
-    <!-- Phase 2 Message Block -->
-    <div class="phase-pair phase-pair-74" :class="{ 'fade-in': secondPhaseStarted }">
-      <div class="text-block">
-        <h3 class="title title-74">Echoes of a Vanished Spring</h3>
-        <h4 class="subtitle subtitle-74">2025: A sudden drop — the fields rest, the future waits</h4>
-        <div class="phase-message phase-message-74">
-          <p>Less land, fewer crops — but over 2 million tons still pushing through!</p>
-        </div>
-      </div>
-      <div class="wheat-grid">
-        <img v-for="index in wheat41Count" :key="index" :src="require(`@/assets/wheat/wheat-41.svg`)" alt="Wheat-41"
-          :style="{ width: imageSize + 'px', height: 'auto' }" />
-      </div>
+<!-- Phase 2 Message Block -->
+<div class="phase-pair phase-pair-74" :class="{ 'fade-in': secondPhaseStarted }">
+  <div class="text-block">
+    <h3 class="title title-74">Echoes of a Vanished Spring</h3>
+    <h4 class="subtitle subtitle-74">2025: A sudden drop — the fields rest, the future waits</h4>
+    <div class="phase-message phase-message-74">
+      <p>Less land, fewer crops — but over 2 million tons still pushing through!</p>
     </div>
+  </div>
+  <div class="wheat-field">
+    <div class="wheat-grid">
+      <img v-for="index in wheat41Count" :key="index" :src="require(`@/assets/wheat/wheat-41.svg`)" alt="Wheat-41"
+        :style="{ width: imageSize + 'px', height: 'auto' }" />
+    </div>
+  </div>
+</div>
   </div>
 </template>
 
 <script>
 export default {
   data() {
-    return {
-      firstPhaseStarted: false,
-      secondPhaseStarted: false,
-      imageSize: 80, // Size of the wheat images
-      wheatBaseCount: 100, // Full count for base wheat
-      wheat69Count: Math.floor(0.69 * 100), // 69% of wheat-base.svgs for phase-pair-88
-      wheat41Count: Math.floor(0.41 * 100), // 41% of wheat-base.svgs for phase-pair-74
-      backgroundStyle: {
-        backgroundColor: '#d9f0d9', // Initial green background
-        transition: 'background-color 1s ease' // Smooth transition for the color change
-      }
-    };
-  },
+  return {
+    firstPhaseStarted: false,
+    secondPhaseStarted: false,
+    imageSize: 80, // Will be dynamically updated
+    wheatBaseCount: 607,
+    wheat69Count: 420,
+    wheat41Count: 246,
+    backgroundStyle: {
+      backgroundColor: '#d9f0d9',
+      transition: 'background-color 1s ease'
+    }
+  };
+},
+
   beforeUnmount() {
     window.removeEventListener('resize', this.updateImageSize);
   },
@@ -77,12 +84,19 @@ export default {
   },
   methods: {
     updateImageSize() {
-  const width = window.innerWidth;
-  if (width < 700) this.imageSize = 40;
-  else if (width < 1000) this.imageSize = 60;
-  else if (width < 1400) this.imageSize = 80;
-  else this.imageSize = 100;
+  const containerWidth = window.innerWidth - 200; // Estimate with padding/margin
+  const containerHeight = window.innerHeight - 200; // Adjust based on layout
+
+  // Assume square area and spacing
+  const totalWheats = this.wheatBaseCount;
+  const gridCols = Math.ceil(Math.sqrt(totalWheats));
+  const imageMaxWidth = containerWidth / gridCols;
+  const imageMaxHeight = containerHeight / gridCols;
+
+  // Choose the smaller of the two to maintain square-ish aspect
+  this.imageSize = Math.floor(Math.min(imageMaxWidth, imageMaxHeight, 100)); // cap max size at 100
 },
+
     observeIntersection() {
       const observer = new IntersectionObserver(
         (entries) => {
@@ -133,10 +147,6 @@ export default {
   box-sizing: border-box;
 }
 
-.text-block {
-  padding: 5px 10px;
-}
-
 .phase-pair.visible {
   opacity: 1;
   transform: translateY(0);
@@ -147,7 +157,6 @@ export default {
   opacity: 1 !important;
   transform: translateY(0) !important;
 }
-
 .phase-pair {
   text-align: left;
   position: absolute;
@@ -156,19 +165,21 @@ export default {
   opacity: 0;
   transform: translateY(-50px);
   transition: opacity 1s ease-out, transform 1s ease-out, z-index 0.3s ease;
-  /* Add z-index transition */
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  /* Ensures the content stays at the bottom */
+  justify-content: space-between; /* Space text-block and wheat-field apart */
   box-sizing: border-box;
+  height: 100%;
+}
+
+.text-block {
+  align-self: flex-start; /* Ensure it's pinned to the top */
+  padding: 5px 10px;
 }
 
 .phase-pair-base:hover {
   z-index: 10;
-  /* Temporarily bring to the front */
-  background-color: #d2f8d2;
-  /* Example background color on hover */
+  background-color: #f5f0e1;
 }
 
 /* Hover effect to change z-index */
@@ -196,17 +207,29 @@ export default {
   height: 74%;
 }
 
+.wheat-field {
+  display: flex;
+  justify-content: center; /* center the .wheat-grid horizontally */
+  padding-bottom: 1rem;
+}
+
 .wheat-grid {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  padding-bottom: 0.5rem;
-  margin-top: auto;
+  flex-wrap: wrap-reverse;
+  align-items: flex-end;
+  align-content: flex-end;
+  height: 100%;
+  justify-content: space-evenly;
+  max-width: 100%; /* prevents overflow */
+}
+
+img {
+  padding-top: 5px;
 }
 
 img.hidden {
   opacity: 0;
   transition: opacity 0.3s;
 }
+
 </style>
