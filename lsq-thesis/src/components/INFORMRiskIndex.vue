@@ -2,6 +2,7 @@
   <div class="container">
     <h3 class="main-title">On the Global Map - INFORM Risk</h3>
     <div class="content">
+      
       <!-- Leaflet Map -->
       <div class="map-container">
         <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
@@ -98,8 +99,17 @@ const createCountryCharts = (countries) => {
 
 const handleResize = () => {
   windowWidth.value = window.innerWidth;
-  createChart(chartData.value);
+
+  // Recreate the chart based on selected countries
+  if (selectedCountries.value.length === 0) {
+    createChart(chartData.value);
+  } else if (selectedCountries.value.length === 1) {
+    createCountryCharts(selectedCountries.value.map(c => c.properties));
+  } else {
+    createMultiCountryCharts(selectedCountries.value.map(c => c.properties));
+  }
 };
+
 
 onMounted(() => {
   window.addEventListener("resize", handleResize);
