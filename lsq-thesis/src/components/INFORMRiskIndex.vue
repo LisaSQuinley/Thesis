@@ -690,7 +690,7 @@ l-map {
 
 .chart-container {
   position: absolute;
-  top: 5.5rem;
+  bottom: 6.5rem;
   right: 6.5rem;
   width: calc(50% - 7.5rem);
   max-height: calc(100% - 12rem);
@@ -792,7 +792,19 @@ input[type="radio"]:checked::before {
 
 @media screen and (min-width: 1701px) {
   .descriptor {
-    width: 30%; /* Adjust this value as needed */
+    width: 30%;
+  }
+}
+
+@media screen and (max-width: 1700px) and (min-width: 1001px) {
+  .descriptor {
+    width: 50%;
+  }
+}
+
+@media screen and (max-width: 999px) {
+  .filter-controls {
+    width: calc(100% - 12rem);
   }
 }
 

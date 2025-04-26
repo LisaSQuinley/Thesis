@@ -358,8 +358,6 @@ export default {
 }
 
 .herd-image {
-  width: 100px;
-  height: 100px;
   object-fit: contain;
   position: absolute;
   transition: transform 0.5s ease, opacity 0.5s ease;
@@ -382,7 +380,6 @@ export default {
   text-align: center;
   font-weight: 700;
   font-size: 30ch;
-  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -400,4 +397,33 @@ export default {
   transition: background-color 1s linear;
   pointer-events: none;
 }
+
+@media screen and (min-width: 1901px) {
+  .herd-image {
+    width: 100px;
+    height: 100px;
+  }
+
+}
+
+@media screen and (max-width: 1900px) and (min-width: 1001px) {
+  .herd-image {
+    width: 70px;
+    height: 70px;
+  }
+  .countdown-text {
+  font-size: 20ch;
+}
+}
+
+@media screen and (max-width: 1000px) {
+  .herd-image {
+    width: 50px;
+    height: 50px;
+  }
+  .countdown-text {
+  font-size: 10ch;
+}
+}
+
 </style>
