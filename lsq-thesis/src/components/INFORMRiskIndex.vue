@@ -19,29 +19,46 @@
 
       <!-- Radio Filters -->
       <div class="filter-controls" v-if="isVisible">
-        <label>
-          <input type="radio" v-model="riskColumn" value="inform_risk" /> INFORM Risk Index
-        </label>
-        <label>
-          <input type="radio" v-model="riskColumn" value="hazard_and_exposure" /> Hazard & Exposure
-        </label>
-        <label>
-          <input type="radio" v-model="riskColumn" value="vulnerability" /> Vulnerability
-        </label>
-        <label>
-          <input type="radio" v-model="riskColumn" value="lack_of_coping_capacity" /> Lack of Coping Capacity
-        </label>
-      </div>
+  <div class="radio-group">
+    <label>
+      <input type="radio" v-model="riskColumn" value="inform_risk" />
+      INFORM Risk Index
+    </label>
+    <div class="descriptor">A score that measures how likely a country is to face crises and how much help it might need, based on three factors: Hazards & Exposure, Vulnerability, and Lack of Coping Capacity.</div>
+  </div>
+
+  <div class="radio-group">
+    <label>
+      <input type="radio" v-model="riskColumn" value="hazard_and_exposure" />
+      Hazard & Exposure
+    </label>
+    <div class="descriptor">How much danger a country faces from storms, floods, earthquakes, and other events.</div>
+  </div>
+
+  <div class="radio-group">
+    <label>
+      <input type="radio" v-model="riskColumn" value="vulnerability" />
+      Vulnerability
+    </label>
+    <div class="descriptor">How badly people and places could be hurt when disasters happen.</div>
+  </div>
+
+  <div class="radio-group">
+    <label>
+      <input type="radio" v-model="riskColumn" value="lack_of_coping_capacity" />
+      Lack of Coping Capacity
+    </label>
+    <div class="descriptor">How ready a country is to handle emergencies and help its people.</div>
+  </div>
+</div>
+
 
       <!-- INFORM Risk Index Chart -->
-      <div class="chart-container" v-if="isVisible" v-show="selectedCountries.length > 0">
-        <div class="column-info">
-          <h4>
-            {{ selectedCountries.length === 1 ? selectedCountries[0].properties.SOVEREIGNT : "" }}
-          </h4>
-        </div>
-        <div id="INFORM-chart" class="multi-chart-container"></div>
-      </div>
+<div class="chart-container" v-if="isVisible" v-show="selectedCountries.length > 0">
+  <button class="reset-button" @click="deselectAllCountries">X</button>
+  <div class="column-info"></div>
+  <div id="INFORM-chart" class="multi-chart-container"></div>
+</div>
     </div>
   </div>
 </template>
@@ -59,6 +76,7 @@ const sortMethod = ref("alphabetical");
 const riskColumn = ref("inform_risk");
 const windowWidth = ref(window.innerWidth);
 const selectedCountries = ref([]);
+const ultimateBarHeight = 40;
 
 let riskData = [];
 
@@ -72,7 +90,6 @@ const geoJsonOptions = {
     });
   }
 };
-
 
 const handleCountryClick = (event, feature) => {
   const countryName = feature.properties.SOVEREIGNT;
@@ -101,7 +118,6 @@ const handleCountryClick = (event, feature) => {
     createMultiCountryCharts(selectedCountries.value.map(c => c.properties));
   }
 
-
   console.log("Selected countries:", selectedCountries.value.map(f => f.properties.SOVEREIGNT));
 };
 
@@ -111,7 +127,6 @@ const createCountryCharts = (countries) => {
     createCountryChart(country);
   });
 };
-
 
 const handleResize = () => {
   windowWidth.value = window.innerWidth;
@@ -186,9 +201,9 @@ const createChart = (data) => {
   // Remove the previous chart
   d3.select("#INFORM-chart").select("svg").remove();
 
-  const margin = { top: 40, right: 30, bottom: 40, left: 195 };
-  const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
-  const barHeight = 25;
+  const margin = { top: 40, right: 10, bottom: 10, left: 205 };
+  const width = 0.8 * (windowWidth.value / 2) - margin.left - margin.right;
+  const barHeight = ultimateBarHeight;
   const svgHeight = data.length * barHeight + margin.top + margin.bottom;
 
   // Sort the data based on the selected method
@@ -207,9 +222,6 @@ const createChart = (data) => {
     .attr("height", svgHeight)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
-
-  // not using maxRisk for the x-axis domain because I want to keep it fixed at [0, 10]
-  // const maxRisk = d3.max(sortedData, (d) => d[riskColumn.value]);
 
   const x = d3.scaleLinear()
     .domain([0, 10]) // change domain to [0, 10] instead of [0, maxRisk]
@@ -234,7 +246,7 @@ const createChart = (data) => {
     .attr("fill", (d) => colorScale(d[riskColumn.value]))
     .attr("width", 0) // Start width at 0 for animation
     .transition()
-    .duration(1000) // Duration for animation
+    .duration(1000)
     .ease(d3.easeCubicOut)
     .attr("width", (d) => x(d[riskColumn.value]));
 
@@ -246,9 +258,7 @@ const createChart = (data) => {
     .attr("y", (d) => y(d.country) + y.bandwidth() / 2)
     .attr("dy", ".35em") // Vertically center the text
     .text((d) => d[riskColumn.value].toFixed(1)) // Display the risk value to one decimal place
-    .style("fill", "#2c3e50")
-    .style("font-size", "12px")
-    .style("font-weight", "bold");
+    .style("fill", "#2c3e50");
 
   // Update phase (bars that already exist)
   bars.transition()
@@ -282,8 +292,8 @@ const createChart = (data) => {
     .remove();
 
   // Append x-axis
-  svg.append("g").attr("class", "x-axis").call(d3.axisTop(x));
-  svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+  svg.append("g").attr("class", "x-axis").call(d3.axisTop(x)).selectAll("text").style("font-size", "1rem").style("fill", "#2c3e50");
+  svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y)).selectAll("text").style("font-size", "1rem").style("fill", "#2c3e50");
 };
 
 const createCountryChart = (country) => {
@@ -291,15 +301,14 @@ const createCountryChart = (country) => {
     .append("div")
     .attr("class", "country-chart");
 
-
-  const margin = { top: 27, right: 30, bottom: 5, left: 155 };
-  const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
-  const barHeight = 30;
+  const margin = { top: 40, right: 10, bottom: 10, left: 205 };
+  const width = 0.8 * (windowWidth.value / 2) - margin.left - margin.right;
+  const barHeight = ultimateBarHeight;
   const keys = [
     { key: "inform_risk", label: "INFORM Risk" },
     { key: "vulnerability", label: "Vulnerability" },
     { key: "hazard_and_exposure", label: "Hazard & Exposure" },
-    { key: "lack_of_coping_capacity", label: "Lack of Coping Capacity" }
+    { key: "lack_of_coping_capacity", label: "Lack of\nCoping Capacity" }
   ];
 
   const data = keys.map(d => ({
@@ -334,8 +343,18 @@ const createCountryChart = (country) => {
     .attr("fill", d => d.color)
     .attr("width", 0)
     .transition()
-    .duration(1000)
+    .delay(500)
+    .duration(500)
     .attr("width", d => x(d.value));
+
+  svg.append("text")
+    .attr("x", (width + margin.left + margin.right) / 2 - margin.left)
+    .attr("y", -10)
+    .attr("text-anchor", "middle")
+    .text(country.SOVEREIGNT)
+    .attr("font-size", "16px")
+    .attr("fill", "#2c3e50")
+    .attr("font-weight", "bold")
 
   svg.selectAll(".bar-text")
     .data(data)
@@ -345,13 +364,55 @@ const createCountryChart = (country) => {
     .attr("x", d => x(d.value) + 5)
     .attr("y", d => y(d.label) + y.bandwidth() / 2)
     .attr("dy", ".35em")
-    .text(d => d.value.toFixed(1))
-    .style("fill", "#2c3e50;")
-    .style("font-size", "12px")
-    .style("font-weight", "bold");
+    .text(d => d.value.toFixed(1));
 
-  svg.append("g").attr("class", "x-axis").call(d3.axisTop(x));
-  svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+  const xAxis = d3.axisTop(x);
+
+  const xAxisGroup = svg.append("g")
+    .attr("class", "x-axis")
+    .call(xAxis);
+
+  // Style all tick labels
+  xAxisGroup.selectAll("text")
+    .style("font-size", "1rem")
+    .style("fill", "#2c3e50");
+
+  // Remove all ticks except 10
+  xAxisGroup.selectAll(".tick")
+    .each(function (d) {
+      if (d !== 10) {
+        d3.select(this).select("text").remove();
+        d3.select(this).select("line").remove();
+      }
+    });
+
+  svg.append("g")
+    .attr("class", "y-axis")
+    .call(d3.axisLeft(y))
+    .selectAll(".tick text")
+    .each(function () {
+      const self = d3.select(this);
+      const fullText = self.text();
+
+      // Only split into tspans if it's a multi-line label
+      if (fullText.includes("\n")) {
+        const lines = fullText.split("\n");
+        self.text(null); // Clear existing text
+
+        lines.forEach((line, i) => {
+          self.append("tspan")
+            .text(line)
+            .attr("x", -10)
+            .attr("dy", i === 0 ? "-0.25em" : "1.1em"); // First line up, rest normal
+        });
+      }
+    })
+    .style("font-size", "1rem")
+    .style("fill", "#2c3e50");
+};
+
+const insertLineBreakBeforeOf = (label) => {
+  return label.replace(/\b(\w+)\s(?=of\b)/gi, '$1\n');
 };
 
 const createMultiCountryCharts = (countries) => {
@@ -364,21 +425,22 @@ const createMultiCountryCharts = (countries) => {
     { key: "lack_of_coping_capacity", label: "Lack of Coping Capacity" }
   ];
 
-  const margin = { top: 60, right: 30, bottom: 15, left: 195 };
-  const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
-  const barHeight = 30;
+  const margin = { top: 40, right: 10, bottom: 10, left: 205 };
+  const width = 0.8 * (windowWidth.value / 2) - margin.left - margin.right;
+  const barHeight = ultimateBarHeight;
   const svgHeight = countries.length * barHeight + margin.top + margin.bottom;
 
   keys.forEach(({ key, label }) => {
     const data = countries.map((c) => ({
       country: c.SOVEREIGNT,
+      formattedCountry: insertLineBreakBeforeOf(c.SOVEREIGNT),
       value: +c[key],
       color: colorScale(c[key])
     }));
 
     const x = d3.scaleLinear().domain([0, 10]).range([0, width]).nice();
     const y = d3.scaleBand()
-      .domain(data.map(d => d.country))
+      .domain(data.map(d => insertLineBreakBeforeOf(d.country)))
       .range([0, svgHeight - margin.top - margin.bottom])
       .padding(0.1);
 
@@ -392,7 +454,7 @@ const createMultiCountryCharts = (countries) => {
     // Title
     svg.append("text")
       .attr("x", (width + margin.left + margin.right) / 2 - margin.left)
-      .attr("y", -30)
+      .attr("y", -10)
       .attr("text-anchor", "middle")
       .text(label)
       .attr("font-size", "16px")
@@ -405,7 +467,7 @@ const createMultiCountryCharts = (countries) => {
       .enter()
       .append("rect")
       .attr("class", "bar")
-      .attr("y", d => y(d.country))
+      .attr("y", d => y(d.formattedCountry))
       .attr("height", y.bandwidth())
       .attr("x", 0)
       .attr("fill", d => d.color)
@@ -421,16 +483,54 @@ const createMultiCountryCharts = (countries) => {
       .append("text")
       .attr("class", "bar-text")
       .attr("x", d => x(d.value) + 5)
-      .attr("y", d => y(d.country) + y.bandwidth() / 2)
+      .attr("y", d => y(d.formattedCountry) + y.bandwidth() / 2)
       .attr("dy", ".35em")
-      .text(d => d.value.toFixed(1))
-      .style("fill", "#2c3e50")
-      .style("font-size", "12px")
-      .style("font-weight", "bold");
+      .text(d => d.value.toFixed(1));
 
     // Axes
-    svg.append("g").attr("class", "x-axis").call(d3.axisTop(x));
-    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+    const xAxis = d3.axisTop(x);
+
+    const xAxisGroup = svg.append("g")
+      .attr("class", "x-axis")
+      .call(xAxis);
+
+    // Style all tick labels
+    xAxisGroup.selectAll("text")
+      .style("font-size", "1rem")
+      .style("fill", "#2c3e50");
+
+    // Remove all ticks except 10
+    xAxisGroup.selectAll(".tick")
+      .each(function (d) {
+        if (d !== 10) {
+          d3.select(this).select("text").remove();
+          d3.select(this).select("line").remove();
+        }
+      });
+
+    svg.append("g")
+      .attr("class", "y-axis")
+      .call(d3.axisLeft(y))
+      .selectAll(".tick text")
+      .each(function () {
+        const self = d3.select(this);
+        const fullText = self.text();
+
+        // Only split into tspans if it's a multi-line label
+        if (fullText.includes("\n")) {
+          const lines = fullText.split("\n");
+          self.text(null); // Clear existing text
+
+          lines.forEach((line, i) => {
+            self.append("tspan")
+              .text(line)
+              .attr("x", -10)
+              .attr("dy", i === 0 ? "-0.25em" : "1.1em"); // First line up, rest normal
+          });
+        }
+      })
+      .style("font-size", "1rem")
+      .style("fill", "#2c3e50");
   });
 };
 
@@ -481,6 +581,17 @@ onMounted(() => {
     {
       root: null, // viewport
       threshold: 0.1,
+    },
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          // The component has left the viewport, trigger deselect action
+          deselectAllCountries();
+        }
+      });
+    },
+    {
+      threshold: 0, // Trigger when the element is fully out of the viewport
     }
   );
 
@@ -497,7 +608,27 @@ onBeforeUnmount(() => {
     observer.unobserve(componentRoot.value);
   }
   window.removeEventListener("resize", handleResize);
+  
 });
+
+const deselectAllCountries = () => {
+  // Clear selected countries
+  selectedCountries.value = [];
+
+  geoJsonData.value.features.forEach(feature => {
+    feature.properties.fillColor = "#D3D3D3"; // Reset to default color
+    feature.properties.weight = 1; // Reset border width to 1
+  });
+
+  geoJsonData.value = { ...geoJsonData.value }; // Trigger reactivity
+
+  // Optionally, reset the chart data if required
+  if (chartData.value.length > 0) {
+    createChart(chartData.value);
+  }
+};
+
+
 
 </script>
 
@@ -545,15 +676,30 @@ l-map {
   padding-left: 2rem;
 }
 
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .chart-container {
   position: absolute;
-  top: 4rem;
-  right: 5rem;
-  width: calc(50% - 5rem);
-  height: calc(100% - 9rem);
+  top: 5.5rem;
+  right: 6.5rem;
+  width: calc(50% - 7.5rem);
+  max-height: calc(100% - 12rem);
   z-index: 1000;
-  background: #089d9da9;
+  background: white;
   overflow: auto;
+
+  /* animation settings */
+  animation: slideInFromRight 0.5s ease-out forwards;
 }
 
 #INFORM-chart {
@@ -575,8 +721,8 @@ h3 {
   height: 100%;
 }
 
-.column-info {
-padding-top: 10px;
+h4 {
+  padding-top: 20px;
 }
 
 .country-info h4 {
@@ -588,16 +734,33 @@ padding-top: 10px;
 }
 
 .leaflet-container {
-  background-color: #089c9d5d;
+  background-color: #40E0D05d;
 }
-
 .filter-controls {
   position: absolute;
-  text-align: right;
-  bottom: 4.5rem;
-  right: 8.5rem;
+  bottom: 5rem;
+  left: 5.25rem;
   z-index: 1000;
   padding: 10px;
+  text-align: left;
+}
+
+.radio-group {
+  margin-bottom: .25rem;
+}
+
+.filter-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.descriptor {
+  margin-left: 1.75rem; /* <<< instead of 1.5em */
+  margin-bottom: 0.5em;
+  font-size: 0.85em;
+  color: #2c3e50;
+  pointer-events: none;
 }
 
 input[type="radio"] {
@@ -625,6 +788,29 @@ input[type="radio"]:checked::before {
   height: 8px;
   border-radius: 50%;
   background: #089c9d;
+}
+
+@media screen and (min-width: 1701px) {
+  .descriptor {
+    width: 30%; /* Adjust this value as needed */
+  }
+}
+
+.reset-button {
+  position: absolute;
+  font-weight: bold;
+  top: 10px;
+  left: 10px;
+  background-color: #40E0D0;
+  color: white;
+  border: none;
+  padding: 3px 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.reset-button:hover {
+  background-color: #089d9d;
 }
 </style>
 

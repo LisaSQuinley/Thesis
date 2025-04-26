@@ -1,45 +1,42 @@
 <template>
-    <div ref="wrapperRef" class="temperature-wrapper unified-heatmap">
-        <h3>Burn, Baby, Burn.</h3>
+  <div ref="wrapperRef" class="temperature-wrapper unified-heatmap">
+    <div class="top-bar">
+      <h3>Burn, Baby, Burn.</h3>
 
-        <div class="control-container">
-            <!-- Left Side: Controls -->
-            <div class="left-controls">
-                <div class="radio-buttons">
-                    <label>
-                        <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
-                    </label>
-                    <label>
-                        <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
-                    </label>
-                </div>
-
-                <div class="overlay-toggle toggle-switch">
-                    <label class="switch">
-                        <input type="checkbox" v-model="showOverlay">
-                        <span class="slider"></span>
-                    </label>
-                    <span class="toggle-label">{{ showOverlay ? "Show Covers" : "Hide Covers" }}</span>
-                </div>
-
+      <div class="legend">
+        <div class="legend-pairs">
+          <div class="legend-pair" v-for="(color, index) in legendColors" :key="index">
+            <div class="legend-color-pair">
+              <div class="legend-color" :style="{ backgroundColor: color.color }"></div>
+              <div class="legend-color" :style="{ backgroundColor: grayscaleLegendColors[index]?.color || '#ccc' }"></div>
             </div>
-
-            <!-- Right Side: Legends -->
-            <div class="legend">
-                <div class="legend-pairs">
-                    <div class="legend-pair" v-for="(color, index) in legendColors" :key="index">
-                        <div class="legend-color-pair">
-                            <div class="legend-color" :style="{ backgroundColor: color.color }"></div>
-                            <div class="legend-color"
-                                :style="{ backgroundColor: grayscaleLegendColors[index]?.color || '#ccc' }"></div>
-                        </div>
-                        <span class="legend-label">{{ color.label }}</span>
-                    </div>
-                </div>
-            </div>
-
+            <span class="legend-label">{{ color.label }}</span>
+          </div>
         </div>
+      </div>
 
+      <div class="control-container">
+        <!-- Left Side: Controls -->
+        <div class="left-controls">
+          <div class="radio-buttons">
+            <label>
+              <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
+            </label>
+            <label>
+              <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
+            </label>
+          </div>
+
+          <div class="overlay-toggle toggle-switch">
+            <label class="switch">
+              <input type="checkbox" v-model="showOverlay">
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">{{ showOverlay ? "Show Covers" : "Hide Covers" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
         <div class="heatmap-container">
             <div v-for="(column, index) in filteredProjectedColumnOptions" :key="column" class="heatmap-block"
                 :class="{ visible: showBlocks[index] }" @mouseenter="hoveredBlock = column"
@@ -520,6 +517,27 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 2rem;
+}
+.top-bar h3 {
+  margin: 0;
+  white-space: nowrap;
+}
+.legend {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.control-container {
+  flex: none;
+}
+
+
 .temperature-wrapper {
     height: 100vh;
     width: 100vw;
@@ -528,16 +546,6 @@ onBeforeUnmount(() => {
     padding: 4rem 5rem 8rem 5rem;
     box-sizing: border-box;
     overflow: hidden;
-}
-
-.control-container {
-    display: flex;
-    justify-content: space-between;
-    /* Push children to edges */
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
-    flex-shrink: 0;
-    gap: 2rem;
 }
 
 .left-controls {
@@ -633,13 +641,6 @@ input:checked+.slider {
 .switch input:checked+.slider:before {
     transform: translate(12px, -50%);
     /* horizontal move + keep vertical centering */
-}
-
-
-.legend {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
 }
 
 .legend-color-pair {

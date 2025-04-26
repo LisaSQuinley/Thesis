@@ -479,8 +479,10 @@ body,
 
 .precip-wrapper h3 {
   position: absolute;
-  top: 6.5rem;
-  left: 12rem;
+  top: 4rem;
+  left: 9rem;
+/*   top: 6.5rem;
+  left: 12rem; */
   margin: 0;
   font-size: 1.25rem;
   font-weight: bold;

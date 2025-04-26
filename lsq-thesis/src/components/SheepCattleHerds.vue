@@ -318,7 +318,8 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 1rem;
+  padding-top: 5px;
+  padding-left: 10px;
   z-index: 3;
   /* Place the text above everything else */
   text-align: left;
