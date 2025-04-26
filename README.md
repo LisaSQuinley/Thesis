@@ -1,4 +1,7 @@
 # Lisa Sakai Quinley's Thesis Project 
+
+https://lisasquinley.github.io/Thesis/
+
 **Created during MS2 of Spring 2025.**
 
 #### Initial Code (I think I will start with a Morocco-focus and then pull back to do a world view).
