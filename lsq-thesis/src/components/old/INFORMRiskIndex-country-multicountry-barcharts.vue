@@ -1,11 +1,13 @@
 <template>
-  <div class="container" ref="componentRoot">
-    <h3 class="main-title" v-if="isVisible">On the Global Map - INFORM Risk</h3>
+  <div class="container">
+    <h3 class="main-title">On the Global Map - INFORM Risk</h3>
     <div class="content">
-
+      
       <!-- Leaflet Map -->
       <div class="map-container">
-        <l-map ref="map" v-model:zoom="zoom" :center="[20, 0]" :zoom-control="false">
+        <l-map ref="map" v-model:zoom="zoom" :center="[0, 0]" :zoom="zoom">
+          <l-tile-layer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" layer-type="base"
+            attribution="OpenStreetMap | contributors: CartoDB" subdomains="abcd"></l-tile-layer>
           <l-geo-json :geojson="geoJsonData" :options-style="geoJsonStyle" :options="geoJsonOptions">
             <template #popup="{ feature }">
               <l-popup>
@@ -17,24 +19,8 @@
         </l-map>
       </div>
 
-      <!-- Radio Filters -->
-      <div class="filter-controls" v-if="isVisible">
-        <label>
-          <input type="radio" v-model="riskColumn" value="inform_risk" /> INFORM Risk Index
-        </label>
-        <label>
-          <input type="radio" v-model="riskColumn" value="hazard_and_exposure" /> Hazard & Exposure
-        </label>
-        <label>
-          <input type="radio" v-model="riskColumn" value="vulnerability" /> Vulnerability
-        </label>
-        <label>
-          <input type="radio" v-model="riskColumn" value="lack_of_coping_capacity" /> Lack of Coping Capacity
-        </label>
-      </div>
-
       <!-- INFORM Risk Index Chart -->
-      <div class="chart-container" v-if="isVisible" v-show="selectedCountries.length > 0">
+      <div class="chart-container">
         <div class="column-info">
           <h4>
             {{ selectedCountries.length === 1 ? selectedCountries[0].properties.SOVEREIGNT : "" }}
@@ -46,13 +32,15 @@
   </div>
 </template>
 
+
+
 <script setup>
 import { onMounted, ref, watch, onBeforeUnmount } from "vue";
 import * as d3 from "d3";
 import "leaflet/dist/leaflet.css";
-import { LMap, LGeoJson, LPopup } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LGeoJson, LPopup } from "@vue-leaflet/vue-leaflet";
 
-const zoom = ref(3);
+const zoom = ref(2);
 const geoJsonData = ref(null);
 const chartData = ref([]);
 const sortMethod = ref("alphabetical");
@@ -65,14 +53,10 @@ let riskData = [];
 const geoJsonOptions = {
   onEachFeature: (feature, layer) => {
     layer.on({
-      click: (e) => {
-        handleCountryClick(e, feature);
-        layer.bringToFront(); // 👈 This brings the clicked layer to the front
-      }
+      click: (e) => handleCountryClick(e, feature) // Pass the feature explicitly
     });
   }
 };
-
 
 const handleCountryClick = (event, feature) => {
   const countryName = feature.properties.SOVEREIGNT;
@@ -116,12 +100,26 @@ const createCountryCharts = (countries) => {
 const handleResize = () => {
   windowWidth.value = window.innerWidth;
 
-  if (selectedCountries.value.length === 1) {
+  // Recreate the chart based on selected countries
+  if (selectedCountries.value.length === 0) {
+    createChart(chartData.value);
+  } else if (selectedCountries.value.length === 1) {
     createCountryCharts(selectedCountries.value.map(c => c.properties));
-  } else if (selectedCountries.value.length > 1) {
+  } else {
     createMultiCountryCharts(selectedCountries.value.map(c => c.properties));
   }
 };
+
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+  loadGeoJsonMap();
+  createChart(chartData.value);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+});
 
 const colorScale = d3.scaleThreshold()
   .domain([0, 2, 4, 6, 8, 10])
@@ -134,9 +132,9 @@ const geoJsonStyle = (feature) => {
   );
   return {
     fillColor: riskValue !== null && riskValue !== undefined ? colorScale(riskValue) : "#D3D3D3",
-    weight: isSelected ? 5 : 1,
+    weight: isSelected ? 3 : 0.5,
     opacity: 1,
-    color: isSelected ? "#089c9d" : "#089c9d",
+    color: isSelected ? "black" : "gray",
     fillOpacity: 1
   };
 };
@@ -246,7 +244,7 @@ const createChart = (data) => {
     .attr("y", (d) => y(d.country) + y.bandwidth() / 2)
     .attr("dy", ".35em") // Vertically center the text
     .text((d) => d[riskColumn.value].toFixed(1)) // Display the risk value to one decimal place
-    .style("fill", "#2c3e50")
+    .style("fill", "black")
     .style("font-size", "12px")
     .style("font-weight", "bold");
 
@@ -292,7 +290,7 @@ const createCountryChart = (country) => {
     .attr("class", "country-chart");
 
 
-  const margin = { top: 27, right: 30, bottom: 5, left: 155 };
+  const margin = { top: 27, right: 30, bottom: 40, left: 195 };
   const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
   const barHeight = 30;
   const keys = [
@@ -364,7 +362,7 @@ const createMultiCountryCharts = (countries) => {
     { key: "lack_of_coping_capacity", label: "Lack of Coping Capacity" }
   ];
 
-  const margin = { top: 60, right: 30, bottom: 15, left: 195 };
+  const margin = { top: 50, right: 30, bottom: 40, left: 195 };
   const width = 0.9 * (windowWidth.value / 2) - margin.left - margin.right;
   const barHeight = 30;
   const svgHeight = countries.length * barHeight + margin.top + margin.bottom;
@@ -424,7 +422,7 @@ const createMultiCountryCharts = (countries) => {
       .attr("y", d => y(d.country) + y.bandwidth() / 2)
       .attr("dy", ".35em")
       .text(d => d.value.toFixed(1))
-      .style("fill", "#2c3e50")
+      .style("fill", "black")
       .style("font-size", "12px")
       .style("font-weight", "bold");
 
@@ -459,46 +457,6 @@ watch(chartData, (newData) => {
     createChart(newData);
   }
 });
-
-const componentRoot = ref(null);
-const isVisible = ref(false);
-
-let observer;
-
-onMounted(() => {
-  window.addEventListener("resize", handleResize);
-  observer = new IntersectionObserver(
-    ([entry]) => {
-      isVisible.value = entry.isIntersecting;
-
-      if (!entry.isIntersecting) {
-        // Deselect all countries and remove chart
-        selectedCountries.value = [];
-        d3.select("#INFORM-chart").selectAll("*").remove();
-      }
-
-    },
-    {
-      root: null, // viewport
-      threshold: 0.1,
-    }
-  );
-
-  if (componentRoot.value) {
-    observer.observe(componentRoot.value);
-  }
-
-  window.addEventListener("resize", handleResize);
-  loadGeoJsonMap();
-});
-
-onBeforeUnmount(() => {
-  if (componentRoot.value) {
-    observer.unobserve(componentRoot.value);
-  }
-  window.removeEventListener("resize", handleResize);
-});
-
 </script>
 
 <style scoped>
@@ -506,13 +464,18 @@ onBeforeUnmount(() => {
 .container {
   display: flex;
   flex-direction: column;
-  position: relative;
   height: 100%;
   /* Fill the height of parent instead of viewport */
   width: 100%;
   box-sizing: border-box;
   /* Respect parent padding if any */
   padding: 4rem 5rem 5rem 5rem;
+}
+
+
+.main-title {
+  text-align: center;
+  margin: 10px 0;
 }
 
 .content {
@@ -528,7 +491,7 @@ onBeforeUnmount(() => {
 
 /* Map container */
 .map-container {
-  width: 100%;
+  width: 50%;
   height: 100%;
   position: relative;
 }
@@ -538,98 +501,57 @@ l-map {
   height: 100%;
 }
 
-.main-title {
-  position: absolute;
-  z-index: 1000;
-  padding-top: 2rem;
-  padding-left: 2rem;
+/* Chart container */
+.chart-container {
+  width: 50%;
+  height: 100%;
+  overflow-y: auto;
 }
 
-.chart-container {
-  position: absolute;
-  top: 4rem;
-  right: 5rem;
-  width: calc(50% - 5rem);
-  height: calc(100% - 9rem);
-  z-index: 1000;
-  background: #089d9da9;
-  overflow: auto;
-}
 
 #INFORM-chart {
   width: 100%;
   overflow-y: auto;
 }
 
+.bar:hover {
+  fill: orange;
+}
+
 h3 {
-  position: absolute;
-  top: 2.5rem;
-  left: 3.5rem;
   margin: 0 0 10px 0;
-  z-index: 1000;
 }
 
 .map-container {
   position: relative;
-  width: 100%;
-  height: 100%;
 }
 
-.column-info {
-padding-top: 10px;
+.map-overlay-message {
+  position: absolute;
+  bottom: 25px;
+  left: 10px;
+  right: 10px;
+  background-color: snow;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #2c3e50;
+  z-index: 999;
+}
+
+.country-info {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
 }
 
 .country-info h4 {
   color: #2c3e50;
+  margin-bottom: 10px;
 }
 
 .country-info p {
   margin: 5px 0;
-}
-
-.leaflet-container {
-  background-color: #089c9d5d;
-}
-
-.filter-controls {
-  position: absolute;
-  text-align: right;
-  bottom: 4.5rem;
-  right: 8.5rem;
-  z-index: 1000;
-  padding: 10px;
-}
-
-input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
-  background-color: #fff;
-  border: 2px solid #089d9d82;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  position: relative;
-}
-
-input[type="radio"]:checked {
-  border-color: #089c9d;
-}
-
-input[type="radio"]:checked::before {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #089c9d;
-}
-</style>
-
-<style>
-.leaflet-control-zoom {
-  display: none;
 }
 </style>
