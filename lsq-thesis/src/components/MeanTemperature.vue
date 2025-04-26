@@ -32,7 +32,7 @@
               <input type="checkbox" v-model="showOverlay">
               <span class="slider"></span>
             </label>
-            <span class="toggle-label">{{ showOverlay ? "Show Covers" : "Hide Covers" }}</span>
+            <span class="toggle-label">{{ showOverlay ? "Hide Covers" : "Show Covers" }}</span>
           </div>
         </div>
       </div>
