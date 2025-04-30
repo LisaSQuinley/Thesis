@@ -11,13 +11,16 @@
         <p v-if="textStage === 'reducing'">
           Imagine a herd of sheep and cattle, grazing peacefully in the fields of Morocco.
         </p>
-        <p v-else-if="textStage === 'complete'">
+        <div v-else-if="textStage === 'complete'">
+        <p>
           According to official figures, Morocco's cattle and sheep herds have decreased
           by 38% in 2025 since the last census nine years ago, in 2014, due to consecutive
-          droughts.<br />
+          droughts.</p>
+          <p>
           And with Morocco in the sixth year of the drought, the Moroccan government has even
           asked its citizens not to slaughter sheep for the upcoming holiday Eid al-Adha.
         </p>
+      </div>
       </div>
 
       <!-- Visual placement zone -->
@@ -126,10 +129,10 @@ export default {
       const textLeft = textRect.left - areaRect.left;
       const textTop = textRect.top - areaRect.top;
       const textBoxBounds = {
-        left: textLeft - 60,
-        top: textTop - 90,
-        right: textLeft + textRect.width + 60,
-        bottom: textTop + textRect.height + 60,
+        left: textLeft - 10,
+        top: textTop - 10,
+        right: textLeft + textRect.width + 10,
+        bottom: textTop + textRect.height + 10,
       };
 
       const cols = Math.floor(maxWidth / cellSize);
@@ -166,8 +169,8 @@ export default {
           ...animal,
           style: {
             position: "absolute",
-            left: `${pos.x - animalSize / 2}px`,
-            top: `${pos.y - animalSize / 2}px`,
+            left: `${pos.x - animalSize / 15}px`,
+            top: `${pos.y - animalSize / 15}px`,
           },
         };
       });
@@ -255,28 +258,45 @@ export default {
       }
     },
 
-    setupIntersectionObserver() {
-      this.observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting && !this.hasReduced) {
-              this.hasReduced = true;
-              this.textStage = 'reducing'; // 👈 Set middle message when herd starts reducing
+    resetAndAnimate() {
+  // Reset all reactive states
+  this.hasReduced = false;
+  this.textStage = 'initial';
+  this.finalPercentage = 100;
+  this.displayedHerd = [];
 
-              setTimeout(() => {
-                this.reduceHerd(); // herd will reduce and then trigger final text
-              }, 2500);
-            }
+  this.generateHerd(); // Regenerate the herd and place animals
+  this.$nextTick(() => {
+    this.drawBackgroundNoise();
 
-          });
-        },
-        {
-          threshold: 0.1, // Trigger when 10% of the component is visible
+    // Small delay to allow "initial" visuals before starting reduction
+    setTimeout(() => {
+      this.textStage = 'reducing';
+      this.reduceHerd();
+    }, 1000);
+  });
+},
+setupIntersectionObserver() {
+  this.observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          this.resetAndAnimate();
+
+          if (!this.hasReduced) {
+            this.hasReduced = true;
+            this.textStage = 'reducing'; // 👈 Set middle message when herd starts reducing
+          }
         }
-      );
-
-      this.observer.observe(this.$refs.herdArea);
+      });
     },
+    {
+      threshold: 0.1, // Trigger when 10% of the component is visible
+    }
+  );
+
+  this.observer.observe(this.$refs.herdArea);
+},
   },
 };
 </script>
@@ -303,7 +323,6 @@ export default {
   position: relative;
   width: 100%;
   height: 100%;
-  padding: 2rem 2rem 2rem 2rem;
   box-sizing: border-box;
   z-index: 2;
   /* Place the padded area above the background */

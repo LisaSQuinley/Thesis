@@ -137,6 +137,9 @@ export default {
           if (entries[0].isIntersecting) {
             this.animateSections();
           }
+          if (entries[0].isIntersecting) {
+        this.restartAnimations();
+      }
         },
         { threshold: 0.5 }
       );
@@ -171,8 +174,25 @@ export default {
         }, 2000); // <<< DELAY before phase 1
       });
     }, 1000);
-  }, 3000);
+  }, 1000);
 },
+
+restartAnimations() {
+  // Reset state
+  this.shownWheatBase = 0;
+  this.shownWheat69 = 0;
+  this.shownWheat41 = 0;
+  this.firstPhaseStarted = false;
+  this.secondPhaseStarted = false;
+
+  // Optional: reset background color immediately
+  this.backgroundStyle.backgroundColor = '#d9f0d9';
+
+  // Restart animation chain
+  this.animateSections();
+},
+
+  // Increment functions
 
 incrementShownWheatBase(callback) {
     const interval = setInterval(() => {
@@ -285,6 +305,7 @@ incrementShownWheatBase(callback) {
 
 .row-block p {
   padding-left: 10px;
+  font-weight: 600;
 }
 
 .phase-pair-base .row-block p {

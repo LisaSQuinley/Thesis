@@ -1,18 +1,24 @@
 <template>
-  <div class="coping-container">
-    <h3 class="title">Coping Mechanisms</h3>
-    <div class="image-viewer">
-      <img
-        :src="tabs[selectedTab].image"
-        :alt="tabs[selectedTab].title"
-        class="fade-image"
-      />
+    <div class="coping-container">
+      <h3 class="title">Coping Mechanisms</h3>
+      <div class="tabs">
+        <button
+          v-for="(tab, index) in tabs"
+          :key="index"
+          :class="{ active: selectedTab === index }"
+          @click="selectedTab = index"
+        >
+          {{ tab.title }}
+        </button>
+      </div>
+      <div class="image-viewer">
+        <img :src="tabs[selectedTab].image" :alt="tabs[selectedTab].title" />
+      </div>
     </div>
-  </div>
-</template>
+  </template>  
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 
 import phase1 from '@/assets/coping-mechanisms/Coping-Mechanisms_Phase-1.png'
 import phase2 from '@/assets/coping-mechanisms/Coping-Mechanisms_Phase-2.png'
@@ -29,19 +35,8 @@ const tabs = [
 
 const selectedTab = ref(0)
 
-let interval
-
-onMounted(() => {
-  interval = setInterval(() => {
-    selectedTab.value = (selectedTab.value + 1) % tabs.length
-  }, 5000) // Change phase every 3 seconds
-})
-
-onUnmounted(() => {
-  clearInterval(interval)
-})
 </script>
-
+  
 <style scoped>
 .coping-container {
   padding: 4rem 5rem 5rem 5rem;
@@ -60,6 +55,31 @@ onUnmounted(() => {
   z-index: 2;
 }
 
+.tabs {
+  position: absolute;
+  top: 4rem;
+  right: 5rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 2;
+}
+
+.tabs button {
+  font-family: "Parkinsans", sans-serif;
+  background: rgba(255, 255, 255, 0.7);
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.tabs button.active {
+  background: #089d9d82;
+  color: white;
+}
+
 .image-viewer {
   display: flex;
   justify-content: center;
@@ -72,12 +92,8 @@ onUnmounted(() => {
 .image-viewer img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Fill the container without stretching */
-  transition: opacity 1s ease-in-out;
-  opacity: 0;
+  object-fit: contain; /* Ensures the image fits without being cropped */
+  transition: all 0.3s ease;
 }
 
-.image-viewer img.fade-image {
-  opacity: 1;
-}
 </style>

@@ -20,27 +20,25 @@
 
 <script>
 import HelloMorocco from './components/HelloMorocco.vue'
-import MoroccoMapView from './components/MoroccoMapView.vue'
 import RainfallPrecipitation from './components/RainfallPrecipitation.vue'
 import MeanTemperature from './components/MeanTemperature.vue'
 import SheepCattleHerds from './components/SheepCattleHerds.vue'
 import LandPloughedWheat from './components/LandPloughedWheat.vue'
-import WorldMapViewTimeline from './components/WorldMapViewTimeline.vue'
 import INFORMRiskIndex from './components/INFORMRiskIndex.vue'
 import CopingMechanisms from './components/CopingMechanisms.vue'
+import DoomedForever from './components/DoomedForever.vue'
 
 export default {
   name: 'App',
   components: {
     HelloMorocco,
-    MoroccoMapView,
     RainfallPrecipitation,
     MeanTemperature,
     SheepCattleHerds,
     LandPloughedWheat,
     CopingMechanisms,
-    WorldMapViewTimeline,
     INFORMRiskIndex,
+    DoomedForever,
   },
   data() {
     return {
@@ -52,8 +50,7 @@ export default {
         'SheepCattleHerds',
         'LandPloughedWheat',
         'CopingMechanisms',
-        'MoroccoMapView',
-        'WorldMapViewTimeline',
+        'DoomedForever',
       ],
       activeStep: 0, // Start from 0
     }
@@ -146,7 +143,6 @@ body, html {
 
 #app {
   font-family: "Parkinsans", sans-serif;
-  /* font-family: Avenir, Helvetica, Arial, sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
