@@ -1,44 +1,131 @@
 <template>
-  <div class="coping-container">
+  <div class="coping-container" ref="containerRef">
     <h3 class="title">Climate Survival Kit</h3>
-    <div class="image-viewer">
-      <img
-        :src="tabs[selectedTab].image"
-        :alt="tabs[selectedTab].title"
-        class="fade-image"
-      />
+
+    <div class="video-viewer">
+      <video
+        ref="copingVideo"
+        loop
+        muted
+        playsinline
+        class="coping-video"
+      >
+        <source
+          src="@/assets/coping-mechanisms/Coping-Mechanisms_Animation.mp4"
+          type="video/mp4"
+        />
+        Your browser does not support the video tag.
+      </video>
+
+      <p class="video-caption">{{ videoText }}</p>
+
+      <button class="video-toggle" @click="togglePlay">
+        {{ isPlaying ? 'Pause' : 'Play' }}
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
-import phase1 from '@/assets/coping-mechanisms/Coping-Mechanisms_Phase-1.png'
-import phase2 from '@/assets/coping-mechanisms/Coping-Mechanisms_Phase-2.png'
-import phase3 from '@/assets/coping-mechanisms/Coping-Mechanisms_Phase-3.png'
-import phase4 from '@/assets/coping-mechanisms/Coping-Mechanisms_Phase-4.png'
+const copingVideo = ref(null)
+const containerRef = ref(null)
+const isPlaying = ref(false)
+const currentSecond = ref(0)
 
-const tabs = [
-  { title: 'Dams: Water Storage', image: phase1 },
-  { title: 'Wells', image: phase2 },
-  { title: 'Traditional water management', image: phase3 },
-  { title: 'Desalination', image: phase4 },
-  { title: 'Other Methods: Water Conservation', image: phase4 },
-]
+let observer
+let delayTimeout
 
-const selectedTab = ref(0)
+const DELAY_MS = 1500
 
-let interval
+// Caption text mapped to specific seconds
+const textBySecond = {
+  0: 'beginning message at 0 seconds',
+  1: 'message at 1 second',
+  2: 'message at 2 seconds',
+  3: 'another message at 3 seconds',
+  6: 'yet another message at 6 seconds',
+  9: 'and then we have this at 9 seconds',
+  12: 'and finally this at 12 seconds, but this is going to be changed',
+}
+
+const videoText = computed(() => {
+  const seconds = Object.keys(textBySecond).map(Number).sort((a, b) => b - a)
+  for (const sec of seconds) {
+    if (currentSecond.value >= sec) {
+      return textBySecond[sec]
+    }
+  }
+  return ''
+})
+
+function togglePlay() {
+  const video = copingVideo.value
+  if (!video) return
+
+  clearTimeout(delayTimeout)
+
+  if (video.paused) {
+    video.play().then(() => {
+      isPlaying.value = true
+    }).catch(err => {
+      console.warn('Playback blocked:', err)
+    })
+  } else {
+    video.pause()
+    isPlaying.value = false
+  }
+}
+
+function handleTimeUpdate() {
+  if (copingVideo.value) {
+    currentSecond.value = Math.floor(copingVideo.value.currentTime)
+  }
+}
 
 onMounted(() => {
-  interval = setInterval(() => {
-    selectedTab.value = (selectedTab.value + 1) % tabs.length
-  }, 5000) // Change phase every 3 seconds
+  if (copingVideo.value) {
+    copingVideo.value.addEventListener('timeupdate', handleTimeUpdate)
+  }
+
+  observer = new IntersectionObserver(
+    ([entry]) => {
+      const video = copingVideo.value
+      if (!video) return
+
+      if (entry.isIntersecting) {
+        delayTimeout = setTimeout(() => {
+          video.play().then(() => {
+            isPlaying.value = true
+          }).catch(err => {
+            console.warn('Autoplay blocked on delay:', err)
+          })
+        }, DELAY_MS)
+      } else {
+        clearTimeout(delayTimeout)
+        video.pause()
+        isPlaying.value = false
+      }
+    },
+    { threshold: 0.25 }
+  )
+
+  if (containerRef.value) {
+    observer.observe(containerRef.value)
+  }
 })
 
 onUnmounted(() => {
-  clearInterval(interval)
+  if (observer && containerRef.value) {
+    observer.unobserve(containerRef.value)
+  }
+
+  if (copingVideo.value) {
+    copingVideo.value.removeEventListener('timeupdate', handleTimeUpdate)
+  }
+
+  clearTimeout(delayTimeout)
 })
 </script>
 
@@ -48,7 +135,7 @@ onUnmounted(() => {
   position: relative;
   height: calc(100vh - 10rem);
   width: 100vw;
-  overflow: hidden; /* no scroll anywhere */
+  overflow: hidden;
 }
 
 .title {
@@ -57,20 +144,17 @@ onUnmounted(() => {
   padding: 5px 10px;
   top: 4rem;
   left: 5rem;
-  font-size: 1.2em;
-  z-index: 2;
+  font-size: 5em;
+  z-index: 999;
   text-transform: uppercase;
   color: #ffffffb6;
-  text-transform: uppercase;
   line-height: 1;
-  font-size: 5em;
-  position: absolute;
   text-align: left;
   margin: 0;
-  z-index: 999;
 }
 
-.image-viewer {
+.video-viewer {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -79,15 +163,42 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.image-viewer img {
+.coping-video {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Fill the container without stretching */
-  transition: opacity 1s ease-in-out;
-  opacity: 0;
+  object-fit: cover;
 }
 
-.image-viewer img.fade-image {
-  opacity: 1;
+.video-toggle {
+  font-family: 'Parkinsans', sans-serif;
+  font-weight: 600;
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: #ffffffb6;
+  color: #2c3e50;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  z-index: 1000;
+  transition: background 0.3s;
+}
+
+.video-toggle:hover {
+  background: #2c3e50b6;
+  color: #ffffff;
+}
+
+.video-caption {
+  position: absolute;
+  top: 2rem;
+  left: 62rem;
+  font-size: 1.3rem;
+  color: #ffffffb6;
+  font-weight: 600;
+  z-index: 999;
+  transition: opacity 0.5s ease-in-out;
 }
 </style>

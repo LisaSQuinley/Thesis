@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <h1 class="droughts">Droughts</h1>
+    <h1 class="droughts" ref="droughtsText">Droughts</h1>
     <div class="floods-fires-line">
       <h1 class="floods" ref="floodsText">Floods</h1>
       <h2 class="rotated">and</h2>
@@ -10,6 +10,19 @@
     <h3 class="byline">Lisa Sakai Quinley</h3>
   </div>
 
+  <canvas ref="noiseCanvas" style="display:none;"></canvas>
+
+  <!-- Droughts mask applied via SVG -->
+  <svg ref="droughtsSvg" class="droughts-svg">
+    <defs>
+      <clipPath id="droughts-clip">
+        <text x="0" :y="droughtsHeight * 0.75" :font-size="droughtsHeight" font-family="Parkinsans" font-weight="800">
+          DROUGHTS
+        </text>
+      </clipPath>
+    </defs>
+    <image :href="noiseDataUrl" width="909.766" height="160" clip-path="url(#droughts-clip)" />
+  </svg>
   <!-- SVG for Raindrops -->
   <svg ref="floodsSvg" class="floods-svg">
     <g ref="raindropGroup">
@@ -53,7 +66,84 @@ let sparkTimer = null
 let firesObserver = null
 let floodsObserver = null
 
+let droughtColorTimer = null
+
+const droughtsSvg = ref(null)
+const noiseCanvas = ref(null)
+const noiseDataUrl = ref('')
+const droughtsText = ref(null)
+let droughtsHeight = 160 // or calculate from DOM
+
 onMounted(async () => {
+
+  if (droughtColorTimer) droughtColorTimer.stop();
+
+  const droughtColors = d3.scaleLinear()
+    .domain([0, 0.25, 0.5, 0.75, 1])
+    .range(["#DEB887", "#d4bb97", "#e2d3b4", "#d4bb97", "#DEB887"]);
+
+  droughtColorTimer = d3.timer((elapsed) => {
+    const t = (Math.sin(elapsed / 3000) + 1) / 2; // smooth oscillation between 0 and 1
+    const color = droughtColors(t);
+    if (droughtsText.value) {
+      droughtsText.value.style.color = color;
+    }
+  });
+
+  // Draw background noise for Droughts
+  drawBackgroundNoise();
+
+  // Position the DROUGHTS SVG directly above the Droughts heading
+  const droughtsSvgNode = droughtsSvg.value; // Renamed to avoid conflict
+  const droughtsTextRect = droughtsText.value.getBoundingClientRect();
+
+  // Set the position of the DROUGHTS SVG to be directly above the heading
+  droughtsSvgNode.style.position = 'absolute';
+  droughtsSvgNode.style.left = `${droughtsTextRect.left+299}px`;
+  droughtsSvgNode.style.top = `${droughtsTextRect.top+16}px`; // Adjust the distance as needed
+  droughtsSvgNode.style.width = `${droughtsTextRect.width}px`;
+  droughtsSvgNode.style.height = '160px'; // Match the height of the SVG
+
+  // Set the clipPath's position relative to the SVG height
+  clipText.value.setAttribute('x', 0);
+  clipText.value.setAttribute('y', 160);
+  clipText.value.setAttribute('font-size', 160);
+
+  function drawBackgroundNoise() {
+    const canvas = noiseCanvas.value
+    const ctx = canvas.getContext('2d')
+    const width = 909.766 // set based on text bounds
+    const height = 160
+
+    canvas.width = width
+    canvas.height = height
+
+    ctx.fillStyle = 'transparent'
+    ctx.fillRect(0, 0, width, height)
+
+    const bladeCount = 2500
+    for (let i = 0; i < bladeCount; i++) {
+      const x = Math.random() * width
+      const y = Math.random() * height
+      const length = 8 + Math.random() * 12
+      const angle = (-Math.PI / 2) + (Math.random() - 0.5) * 0.6
+      const xEnd = x + length * Math.cos(angle)
+      const yEnd = y + length * Math.sin(angle)
+
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(xEnd, yEnd)
+      ctx.strokeStyle = `rgba(139, 69, 19, ${0.04 + Math.random() * 0.3})`
+      ctx.lineWidth = 1
+      ctx.stroke()
+    }
+
+    // Convert to dataURL and assign
+    noiseDataUrl.value = canvas.toDataURL()
+  }
+
+  drawBackgroundNoise();
+
   // Position FIRES SVG
   const svgNode = firesSvg.value
   const group = d3.select(sparkGroup.value)
@@ -85,6 +175,18 @@ onMounted(async () => {
 
   // Wait for DOM to stabilize
   await nextTick()
+
+  // Droughts Intersection Observer
+  const droughtsObserver = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+      droughtsSvg.value.style.display = 'block'
+    } else {
+      droughtsSvg.value.style.display = 'none'
+    }
+  }, { threshold: 0.1 })
+  if (droughtsText.value instanceof Element) {
+    droughtsObserver.observe(droughtsText.value)
+  }
 
   // Fires Intersection Observer
   firesObserver = new IntersectionObserver(([entry]) => {
@@ -125,6 +227,10 @@ onUnmounted(() => {
   if (sparkTimer) sparkTimer.stop()
   if (firesObserver) firesObserver.disconnect()
   if (floodsObserver) floodsObserver.disconnect()
+  if (droughtColorTimer) droughtColorTimer.stop()
+  if (droughtsSvg.value) {
+    droughtsSvg.value.remove()
+  }
 })
 
 function createSparks(group, svgNode) {
@@ -166,8 +272,8 @@ function renderRaindrops(svgEl, numDrops = 100) {
   const svg = d3.select(svgEl)
 
   svg.attr('width', width)
-     .attr('height', height)
-     .attr('viewBox', `0 0 ${width} ${height}`)
+    .attr('height', height)
+    .attr('viewBox', `0 0 ${width} ${height}`)
 
   const group = d3.select(svgEl.querySelector('g'))
   group.selectAll('*').remove()
@@ -184,16 +290,16 @@ function renderRaindrops(svgEl, numDrops = 100) {
     const duration = 2000 + Math.random() * 2000
 
     const dropPath = d3.path()
-    dropPath.moveTo(0, -dropHeight / 2)
+    dropPath.moveTo(0, dropHeight / 2) // start at bottom (rounded part)
     dropPath.bezierCurveTo(
-      dropWidth / 2, -dropHeight / 2,
-      dropWidth / 2, dropHeight / 4,
-      0, dropHeight / 2
+      dropWidth / 2, dropHeight / 2,
+      dropWidth / 2, -dropHeight / 4,
+      0, -dropHeight / 2 // pointy top
     )
     dropPath.bezierCurveTo(
-      -dropWidth / 2, dropHeight / 4,
-      -dropWidth / 2, -dropHeight / 2,
-      0, -dropHeight / 2
+      -dropWidth / 2, -dropHeight / 4,
+      -dropWidth / 2, dropHeight / 2,
+      0, dropHeight / 2
     )
 
     group.append('path')
@@ -221,7 +327,6 @@ function renderRaindrops(svgEl, numDrops = 100) {
 </script>
 
 <style scoped>
-
 html,
 body {
   height: 100vh;
@@ -281,9 +386,12 @@ h2 {
 }
 
 /* === Colored Headings === */
+
+/* 
 .droughts {
   color: #DEB887;
 }
+ */
 
 .floods {
   color: #089c9d;
