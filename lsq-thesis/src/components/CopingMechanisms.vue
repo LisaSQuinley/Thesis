@@ -1,6 +1,6 @@
 <template>
   <div class="coping-container">
-    <h3 class="title">Coping Mechanisms</h3>
+    <h3 class="title">Climate Survival Kit</h3>
     <div class="image-viewer">
       <img
         :src="tabs[selectedTab].image"
@@ -53,11 +53,21 @@ onUnmounted(() => {
 
 .title {
   position: absolute;
-  padding: 5px 15px;
+  font-weight: 800;
+  padding: 5px 10px;
   top: 4rem;
   left: 5rem;
   font-size: 1.2em;
   z-index: 2;
+  text-transform: uppercase;
+  color: #ffffffb6;
+  text-transform: uppercase;
+  line-height: 1;
+  font-size: 5em;
+  position: absolute;
+  text-align: left;
+  margin: 0;
+  z-index: 999;
 }
 
 .image-viewer {

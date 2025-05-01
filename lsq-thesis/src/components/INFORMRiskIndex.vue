@@ -1,6 +1,6 @@
 <template>
   <div class="container" ref="componentRoot">
-    <h3 class="main-title" v-if="isVisible">On the Global Map - INFORM Risk</h3>
+    <h3 class="main-title" v-if="isVisible">Zooming Into Risk</h3>
     <div class="content">
 
       <!-- Leaflet Map -->
@@ -708,9 +708,13 @@ l-map {
 }
 
 h3 {
+  font-size: 5em;
+  font-weight: 800;
+  color: #089d9d2f;
+  text-transform: uppercase;
   position: absolute;
-  top: 2.5rem;
-  left: 3.5rem;
+  bottom: 5rem;
+  right: 7rem;
   margin: 0 0 10px 0;
   z-index: 1000;
 }
@@ -753,12 +757,14 @@ h4 {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  font-weight: bold;
+  font-size: 18px;
 }
 
 .descriptor {
   margin-left: 1.75rem; /* <<< instead of 1.5em */
   margin-bottom: 0.5em;
-  font-size: 0.85em;
+  font-size: 16px;
   color: #2c3e50;
   pointer-events: none;
 }

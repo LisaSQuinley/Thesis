@@ -1,42 +1,45 @@
 <template>
-  <div ref="wrapperRef" class="temperature-wrapper unified-heatmap">
-    <div class="top-bar">
-      <h3>Burn, Baby, Burn.</h3>
-
-      <div class="legend">
-        <div class="legend-pairs">
-          <div class="legend-pair" v-for="(color, index) in legendColors" :key="index">
-            <div class="legend-color-pair">
-              <div class="legend-color" :style="{ backgroundColor: color.color }"></div>
-              <div class="legend-color" :style="{ backgroundColor: grayscaleLegendColors[index]?.color || '#ccc' }"></div>
+    <div ref="wrapperRef" class="temperature-wrapper unified-heatmap">
+        <div class="title" v-show="showTitle">
+            <h3>Burn, Baby, Burn.</h3>
+        </div>
+        <div class="top-bar">
+            <!-- <h3></h3> -->
+            <div class="legend">
+                <div class="legend-pairs">
+                    <div class="legend-pair" v-for="(color, index) in legendColors" :key="index">
+                        <div class="legend-color-pair">
+                            <div class="legend-color" :style="{ backgroundColor: color.color }"></div>
+                            <div class="legend-color"
+                                :style="{ backgroundColor: grayscaleLegendColors[index]?.color || '#ccc' }"></div>
+                        </div>
+                        <span class="legend-label">{{ color.label }}</span>
+                    </div>
+                </div>
             </div>
-            <span class="legend-label">{{ color.label }}</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="control-container">
-        <!-- Left Side: Controls -->
-        <div class="left-controls">
-          <div class="radio-buttons">
-            <label>
-              <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
-            </label>
-            <label>
-              <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
-            </label>
-          </div>
+            <div class="control-container">
+                <!-- Left Side: Controls -->
+                <div class="left-controls">
+                    <div class="radio-buttons">
+                        <label>
+                            <input type="radio" v-model="selectedColumnGroup" value="max" /> Max
+                        </label>
+                        <label>
+                            <input type="radio" v-model="selectedColumnGroup" value="mean" /> Mean
+                        </label>
+                    </div>
 
-          <div class="overlay-toggle toggle-switch">
-            <label class="switch">
-              <input type="checkbox" v-model="showOverlay">
-              <span class="slider"></span>
-            </label>
-            <span class="toggle-label">{{ showOverlay ? "Hide Covers" : "Show Covers" }}</span>
-          </div>
+                    <div class="overlay-toggle toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" v-model="showOverlay">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="toggle-label">{{ showOverlay ? "Hide Covers" : "Show Covers" }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
         <div class="heatmap-container">
             <div v-for="(column, index) in filteredProjectedColumnOptions" :key="column" class="heatmap-block"
                 :class="{ visible: showBlocks[index] }" @mouseenter="hoveredBlock = column"
@@ -86,6 +89,7 @@ const hasAnimated = ref(false);
 
 const legendInFahrenheit = ref(false);
 
+const showTitle = ref(false);
 
 // NEW STATE: Show/hide overlays
 const showOverlay = ref(true);
@@ -208,7 +212,7 @@ function renderUnifiedHeatmap(data, svgEl, isLastHeatmap) {
     const months = Array.from(new Set(data.map(d => d.month))).reverse();
     const years = Array.from(new Set(data.map(d => d.year)));
 
-    const margin = { top: 0, right: 20, bottom: 30, left: 50 };
+    const margin = { top: 0, right: 90, bottom: 30, left: 50 };
     const innerHeight = height - margin.top - margin.bottom;
     const innerWidth = width - margin.left - margin.right;
 
@@ -481,6 +485,18 @@ onMounted(async () => {
             });
     }, 100); // small delay just in case
 
+    observer.value = new IntersectionObserver(
+        ([entry]) => {
+            showTitle.value = entry.isIntersecting;
+        },
+        {
+            threshold: 0.1, // Adjust sensitivity
+        }
+    );
+
+    if (wrapperRef.value) {
+        observer.value.observe(wrapperRef.value);
+    }
 
 });
 
@@ -517,28 +533,44 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  gap: 2rem;
+.title {
+    position: absolute;
+    bottom: 10.5rem;
+    right: 11.25rem;
+    font-size: 5rem;
+    color: #FF00003f;
+    text-transform: uppercase;
+    transform: rotate(90deg);
+    transform-origin: bottom right;
 }
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    /* gap: 2rem; */
+}
+
+/* 
 .top-bar h3 {
   margin: 0;
   white-space: nowrap;
 }
+ */
 .legend {
-  flex: 1;
-  display: flex;
-  justify-content: center;
+    /* flex: 1; */
+    display: flex;
+    justify-content: center;
 }
+
 .control-container {
-  flex: none;
+    flex: none;
 }
 
 
 .temperature-wrapper {
+    position: relative;
     height: 100vh;
     width: 100vw;
     display: flex;
@@ -705,13 +737,11 @@ input:checked+.slider {
     height: 100%;
     display: flex;
     justify-content: flex-start;
-    /* Align heatmap content to the top */
 }
 
 .heatmap-cover {
     position: absolute;
     top: 0;
-    /* Align the cover to the top */
     left: 0;
     width: 100%;
     height: 100%;
@@ -727,6 +757,7 @@ input:checked+.slider {
 
 .heatmap-block .heatmap-cover {
     height: calc(100% - 30px);
+    width: calc(100% - 90px);
 }
 
 .heatmap-cover.hidden {
@@ -788,27 +819,28 @@ input:checked+.slider {
 
 h4 {
     text-align: left;
-    font-size: 4em;
+    font-size: 22px;
     margin: 0;
     line-height: 1;
 }
 
 h5 {
+    padding-top: 0.25rem;
     text-align: left;
-    font-size: 2.5em;
+    font-size: 20px;
     margin: 0;
     line-height: 1.25;
 }
 
 h6 {
-    padding-top: 0.5rem;
+    padding-top: 0.25rem;
     text-align: left;
-    font-size: 1.5em;
+    font-size: 18px;
     margin: 0;
 }
 
 p {
-    font-size: 1em;
+    font-size: 18px;
     margin: 0;
     text-align: left;
     font-weight: 400;

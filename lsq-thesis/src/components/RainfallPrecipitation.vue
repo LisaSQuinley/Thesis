@@ -1,6 +1,6 @@
 <template>
     <div class="precip-wrapper bar-chart" ref="precipWrapperRef">
-      <h3>Raincheck Forever</h3>
+      <h3>Raincheck<br>Forever</h3>
     <div v-for="column in filteredPrecipitationColumns" :key="column" class="bar-chart-block">
       <div class="bar-chart-content">
         <!--         <h4>{{ getDropdownTitle(column) }}</h4> -->
@@ -478,15 +478,17 @@ body,
 }
 
 .precip-wrapper h3 {
+  color: #40E0D04f;
+  text-transform: uppercase;
+  line-height: 1;
+  font-size: 5em;
   position: absolute;
   top: 4rem;
-  left: 9rem;
-/*   top: 6.5rem;
-  left: 12rem; */
+  left: 9.5rem;
+  text-align: left;
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: bold;
-  z-index: 1;
+  font-weight: 800;
+  z-index: 0;
 }
 
 .bar-chart {

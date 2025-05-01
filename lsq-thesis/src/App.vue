@@ -1,11 +1,15 @@
 <template>
   <div id="scrollyteller">
-    <div
-      v-for="(stepComponent, index) in steps"
-      :key="index"
-      class="charts-wrapper"
-      v-intersect="() => setActiveStep(index)"
-    >
+    <div class="tab-container">
+      <div v-for="(title, i) in visibleTitles" :key="i" :class="['tab', { active: i + 1 === activeStep }]"
+        :style="i + 1 === activeStep ? { color: getTabColor(i), borderLeftColor: getTabColor(i) } : {}"
+        @click="goToStep(i + 1)">
+        {{ title }}
+      </div>
+
+    </div>
+    <div v-for="(stepComponent, index) in steps" :key="index" class="charts-wrapper"
+      v-intersect="() => setActiveStep(index)">
       <component :is="stepComponent" />
     </div>
 
@@ -40,6 +44,14 @@ export default {
     INFORMRiskIndex,
     DoomedForever,
   },
+  computed: {
+    visibleSteps() {
+      return this.steps.slice(1, -1)
+    },
+    visibleTitles() {
+      return this.stepTitles.slice(1, -1)
+    },
+  },
   data() {
     return {
       steps: [
@@ -52,7 +64,17 @@ export default {
         'CopingMechanisms',
         'DoomedForever',
       ],
-      activeStep: 0, // Start from 0
+      stepTitles: [
+        'Hello Morocco',
+        'Zooming Into Risk',
+        'Raincheck Forever',
+        'Burn, Baby, Burn.',
+        'Pasture Panic',
+        'Wheat World',
+        'Climate Survival Kit',
+        'Doomed Forever?',
+      ],
+      activeStep: 0,
     }
   },
   mounted() {
@@ -63,31 +85,52 @@ export default {
   },
   methods: {
     setActiveStep(index) {
-  if (index === this.activeStep) return // prevent duplicate updates
-  this.activeStep = index
-}
-,
-handleKeyPress(e) {
-  if (e.code === 'Space') e.preventDefault()
+      if (index === this.activeStep) return // prevent duplicate updates
+      this.activeStep = index
+    },
+    getTabColor(index) {
+      const component = this.steps[index + 1]; // +1 to match your visibleSteps slice
+      switch (component) {
+        case 'INFORMRiskIndex':
+          return '#089d9d';
+        case 'RainfallPrecipitation':
+          return '#40E0D0'; 
+        case 'MeanTemperature':
+          return '#FF0000';
+        case 'SheepCattleHerds':
+          return '#d4bb97';
+        case 'LandPloughedWheat':
+          return '#B28F04';
+        case 'CopingMechanisms':
+          return '#820747';
+        default:
+          return '#000'; // default
+      }
+    },
+    formatStepName(step) {
+      return step.replace(/([A-Z])/g, ' $1').trim()
+    },
+    handleKeyPress(e) {
+      if (e.code === 'Space') e.preventDefault()
 
-  if (e.code === 'ArrowDown' || e.code === 'Space') {
-    this.goToStep(this.activeStep + 1)
-  } else if (e.code === 'ArrowUp') {
-    this.goToStep(this.activeStep - 1)
-  }
-}
-,
+      if (e.code === 'ArrowDown' || e.code === 'Space') {
+        this.goToStep(this.activeStep + 1)
+      } else if (e.code === 'ArrowUp') {
+        this.goToStep(this.activeStep - 1)
+      }
+    }
+    ,
     goToStep(index) {
-  const stepEls = document.querySelectorAll('.charts-wrapper')
-  if (index < 0 || index >= stepEls.length) return
+      const stepEls = document.querySelectorAll('.charts-wrapper')
+      if (index < 0 || index >= stepEls.length) return
 
-  const el = stepEls[index]
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    this.activeStep = index
-  }
-}
-,
+      const el = stepEls[index]
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        this.activeStep = index
+      }
+    }
+    ,
   },
   directives: {
     intersect: {
@@ -112,7 +155,6 @@ handleKeyPress(e) {
 
 
 <style>
-
 #scrollyteller {
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
@@ -120,7 +162,8 @@ handleKeyPress(e) {
 }
 
 
-body, html {
+body,
+html {
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -162,35 +205,71 @@ h1 {
   margin: 0;
   font-weight: 800;
 }
+
 h2 {
   font-size: 1.4em;
   margin: 0;
   font-weight: 300;
 }
+
 h3 {
   font-size: 1.2em;
   margin: 0;
 }
+
 h4 {
   font-size: 1em;
   margin: 0;
 }
+
 h5 {
   font-size: 0.8em;
   margin: 0;
 }
+
 h6 {
   font-size: 0.6em;
   margin: 0;
 }
+
 p {
   font-size: 1em;
   margin: 0;
   text-align: left;
 }
+
 text {
   font-family: "Parkinsans", sans-serif;
   margin: 0;
 }
 
+.tab-container {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+  padding-left: 10px;
+}
+
+.tab {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  padding: 10px 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: #2c3e504f;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab.active {
+  color: #000;
+  border-left: 3px solid #000;
+  font-weight: bold;
+}
 </style>

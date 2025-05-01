@@ -2,7 +2,9 @@
   <div class="sheep-cattle-herds" ref="herdArea">
     <!-- Background canvas -->
     <canvas class="background-canvas" ref="noiseCanvas"></canvas>
-
+    <div class="graphic-title" ref="graphicTitle">
+      <h3>Pasture Panic</h3>
+    </div>
     <!-- White padded boundary -->
     <div class="herd-padding-wrapper">
       <div class="herd-text" ref="herdText" :class="{ 'visible': textStage !== 'initial' }">
@@ -12,15 +14,15 @@
           Imagine a herd of sheep and cattle, grazing peacefully in the fields of Morocco.
         </p>
         <div v-else-if="textStage === 'complete'">
-        <p>
-          According to official figures, Morocco's cattle and sheep herds have decreased
-          by 38% in 2025 since the last census nine years ago, in 2014, due to consecutive
-          droughts.</p>
           <p>
-          And with Morocco in the sixth year of the drought, the Moroccan government has even
-          asked its citizens not to slaughter sheep for the upcoming holiday Eid al-Adha.
-        </p>
-      </div>
+            According to official figures, Morocco's cattle and sheep herds have decreased
+            by 38% in 2025 since the last census nine years ago, in 2014, due to consecutive
+            droughts.</p>
+          <p>
+            And with Morocco in the sixth year of the drought, the Moroccan government has even
+            asked its citizens not to slaughter sheep for the upcoming holiday Eid al-Adha.
+          </p>
+        </div>
       </div>
 
       <!-- Visual placement zone -->
@@ -118,6 +120,8 @@ export default {
       const textBox = this.$refs.herdText;
       const areaRect = visualArea.getBoundingClientRect();
       const textRect = textBox.getBoundingClientRect();
+      const titleBox = this.$refs.graphicTitle;
+      const titleRect = titleBox.getBoundingClientRect();
 
       const maxWidth = areaRect.width;
       const maxHeight = areaRect.height;
@@ -128,12 +132,23 @@ export default {
 
       const textLeft = textRect.left - areaRect.left;
       const textTop = textRect.top - areaRect.top;
-      const textBoxBounds = {
-        left: textLeft - 10,
-        top: textTop - 10,
-        right: textLeft + textRect.width + 10,
-        bottom: textTop + textRect.height + 10,
-      };
+      const titleLeft = titleRect.left - areaRect.left;
+      const titleTop = titleRect.top - areaRect.top;
+
+      const exclusionZones = [
+        {
+          left: textLeft - 10,
+          top: textTop - 10,
+          right: textLeft + textRect.width + 10,
+          bottom: textTop + textRect.height + 10,
+        },
+        {
+          left: titleLeft - 50,
+          top: titleTop - 10,
+          right: titleLeft + titleRect.width + 10,
+          bottom: titleTop + titleRect.height + 10,
+        },
+      ];
 
       const cols = Math.floor(maxWidth / cellSize);
       const rows = Math.floor(maxHeight / cellSize);
@@ -145,11 +160,12 @@ export default {
           const posY = y * cellSize + cellSize / 2;
 
           // Check if inside text bounds
-          const overlapsText =
-            posX + animalSize / 2 > textBoxBounds.left &&
-            posX - animalSize / 2 < textBoxBounds.right &&
-            posY + animalSize / 2 > textBoxBounds.top &&
-            posY - animalSize / 2 < textBoxBounds.bottom;
+          const overlapsText = exclusionZones.some(zone =>
+            posX + animalSize / 2 > zone.left &&
+            posX - animalSize / 2 < zone.right &&
+            posY + animalSize / 2 > zone.top &&
+            posY - animalSize / 2 < zone.bottom
+          );
 
           if (!overlapsText) {
             grid.push({ x: posX, y: posY });
@@ -259,49 +275,66 @@ export default {
     },
 
     resetAndAnimate() {
-  // Reset all reactive states
-  this.hasReduced = false;
-  this.textStage = 'initial';
-  this.finalPercentage = 100;
-  this.displayedHerd = [];
+      // Reset all reactive states
+      this.hasReduced = false;
+      this.textStage = 'initial';
+      this.finalPercentage = 100;
+      this.displayedHerd = [];
 
-  this.generateHerd(); // Regenerate the herd and place animals
-  this.$nextTick(() => {
-    this.drawBackgroundNoise();
+      this.generateHerd(); // Regenerate the herd and place animals
+      this.$nextTick(() => {
+        this.drawBackgroundNoise();
 
-    // Small delay to allow "initial" visuals before starting reduction
-    setTimeout(() => {
-      this.textStage = 'reducing';
-      this.reduceHerd();
-    }, 1000);
-  });
-},
-setupIntersectionObserver() {
-  this.observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          this.resetAndAnimate();
-
-          if (!this.hasReduced) {
-            this.hasReduced = true;
-            this.textStage = 'reducing'; // 👈 Set middle message when herd starts reducing
-          }
-        }
+        // Small delay to allow "initial" visuals before starting reduction
+        setTimeout(() => {
+          this.textStage = 'reducing';
+          this.reduceHerd();
+        }, 1000);
       });
     },
-    {
-      threshold: 0.1, // Trigger when 10% of the component is visible
-    }
-  );
+    setupIntersectionObserver() {
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              this.resetAndAnimate();
 
-  this.observer.observe(this.$refs.herdArea);
-},
+              if (!this.hasReduced) {
+                this.hasReduced = true;
+                this.textStage = 'reducing'; // 👈 Set middle message when herd starts reducing
+              }
+            }
+          });
+        },
+        {
+          threshold: 0.1, // Trigger when 10% of the component is visible
+        }
+      );
+
+      this.observer.observe(this.$refs.herdArea);
+    },
   },
 };
 </script>
 
 <style scoped>
+.graphic-title {
+  position: absolute;
+  bottom: 0;
+  right: 2rem;
+  z-index: 2;
+  font-size: 5em;
+  color: #8a6e003f;
+  text-transform: uppercase;
+}
+.graphic-title h3 {
+  font-weight: 800;
+}
+
+p {
+  font-size: 16px;
+}
+
 .sheep-cattle-herds {
   position: relative;
   width: calc(100vw - 11rem);
@@ -329,7 +362,7 @@ setupIntersectionObserver() {
 }
 
 .herd-text {
-  width: 40%;
+  width: 45%;
   margin: 0 auto;
   opacity: 0;
   visibility: hidden;
@@ -430,9 +463,10 @@ setupIntersectionObserver() {
     width: 70px;
     height: 70px;
   }
+
   .countdown-text {
-  font-size: 20ch;
-}
+    font-size: 20ch;
+  }
 }
 
 @media screen and (max-width: 1000px) {
@@ -440,9 +474,9 @@ setupIntersectionObserver() {
     width: 50px;
     height: 50px;
   }
-  .countdown-text {
-  font-size: 10ch;
-}
-}
 
+  .countdown-text {
+    font-size: 10ch;
+  }
+}
 </style>

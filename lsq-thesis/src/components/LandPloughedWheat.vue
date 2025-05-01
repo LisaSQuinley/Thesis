@@ -16,12 +16,14 @@
         </div>
       </div>
       <div class="wheat-field">
-        <div class="wheat-grid">
+        <div class="wheat-grid wheat-grid-base">
           <img v-for="index in wheatBaseArray.slice(0, shownWheatBase)" :key="'base-' + index"
             :src="require(`@/assets/wheat/wheat-base.svg`)" alt="Wheat"
             :style="{ width: imageSize + 'px', height: 'auto' }" />
         </div>
-
+        <div class="graphic-title">
+          <h3>Wheat World</h3>
+        </div>
       </div>
     </div>
 
@@ -41,11 +43,14 @@
         </div>
       </div>
       <div class="wheat-field">
-        <div class="wheat-grid">
+        <div class="wheat-grid wheat-grid-69">
           <img v-for="index in wheat69Array.slice(0, shownWheat69)" :key="'69-' + index"
             :src="require(`@/assets/wheat/wheat-69.svg`)" alt="Wheat-69"
             :style="{ width: imageSize + 'px', height: 'auto' }" />
         </div>
+      </div>
+      <div class="graphic-title">
+        <h3>Wheat World</h3>
       </div>
     </div>
 
@@ -65,11 +70,14 @@
         </div>
       </div>
       <div class="wheat-field">
-        <div class="wheat-grid">
+        <div class="wheat-grid wheat-grid-41">
           <img v-for="index in wheat41Array.slice(0, shownWheat41)" :key="'41-' + index"
             :src="require(`@/assets/wheat/wheat-41.svg`)" alt="Wheat-41"
             :style="{ width: imageSize + 'px', height: 'auto' }" />
         </div>
+      </div>
+      <div class="graphic-title graphic-title-41">
+        <h3>Wheat<br>World</h3>
       </div>
     </div>
   </div>
@@ -138,94 +146,94 @@ export default {
             this.animateSections();
           }
           if (entries[0].isIntersecting) {
-        this.restartAnimations();
-      }
+            this.restartAnimations();
+          }
         },
         { threshold: 0.5 }
       );
       observer.observe(this.$refs.container);
     },
     animateSections() {
-  setTimeout(() => {
-    this.backgroundStyle.backgroundColor = '#f5f0e1';
-    setTimeout(() => {
-      console.time('Wheat Base Growth');
-      this.incrementShownWheatBase(() => {
-        console.timeEnd('Wheat Base Growth');
+      setTimeout(() => {
+        this.backgroundStyle.backgroundColor = '#f5f0e1';
+        setTimeout(() => {
+          console.time('Wheat Base Growth');
+          this.incrementShownWheatBase(() => {
+            console.timeEnd('Wheat Base Growth');
 
-        setTimeout(() => {  // <<< 1000ms DELAY before starting Phase 1
-          this.firstPhaseStarted = true;
+            setTimeout(() => {  // <<< 1000ms DELAY before starting Phase 1
+              this.firstPhaseStarted = true;
 
-          console.time('Wheat 69 Growth');
-          this.incrementShownWheat69(() => {
-            console.timeEnd('Wheat 69 Growth');
+              console.time('Wheat 69 Growth');
+              this.incrementShownWheat69(() => {
+                console.timeEnd('Wheat 69 Growth');
 
-            setTimeout(() => { // <<< 1000ms DELAY before starting Phase 2
-              this.secondPhaseStarted = true;
+                setTimeout(() => { // <<< 1000ms DELAY before starting Phase 2
+                  this.secondPhaseStarted = true;
 
-              console.time('Wheat 41 Growth');
-              this.incrementShownWheat41(() => {
-                console.timeEnd('Wheat 41 Growth');
+                  console.time('Wheat 41 Growth');
+                  this.incrementShownWheat41(() => {
+                    console.timeEnd('Wheat 41 Growth');
+                  });
+
+                }, 2000); // <<<< DELAY before phase 2
               });
 
-            }, 2000); // <<<< DELAY before phase 2
+            }, 2000); // <<< DELAY before phase 1
           });
+        }, 1000);
+      }, 1000);
+    },
 
-        }, 2000); // <<< DELAY before phase 1
-      });
-    }, 1000);
-  }, 1000);
-},
+    restartAnimations() {
+      // Reset state
+      this.shownWheatBase = 0;
+      this.shownWheat69 = 0;
+      this.shownWheat41 = 0;
+      this.firstPhaseStarted = false;
+      this.secondPhaseStarted = false;
 
-restartAnimations() {
-  // Reset state
-  this.shownWheatBase = 0;
-  this.shownWheat69 = 0;
-  this.shownWheat41 = 0;
-  this.firstPhaseStarted = false;
-  this.secondPhaseStarted = false;
+      // Optional: reset background color immediately
+      this.backgroundStyle.backgroundColor = '#d9f0d9';
 
-  // Optional: reset background color immediately
-  this.backgroundStyle.backgroundColor = '#d9f0d9';
+      // Restart animation chain
+      this.animateSections();
+    },
 
-  // Restart animation chain
-  this.animateSections();
-},
+    // Increment functions
 
-  // Increment functions
+    incrementShownWheatBase(callback) {
+      const interval = setInterval(() => {
+        if (this.shownWheatBase < this.wheatBaseCount) {
+          this.shownWheatBase++;
+        } else {
+          clearInterval(interval);
+          if (callback) callback();
+        }
+      }, 5);
+    },
 
-incrementShownWheatBase(callback) {
-    const interval = setInterval(() => {
-      if (this.shownWheatBase < this.wheatBaseCount) {
-        this.shownWheatBase++;
-      } else {
-        clearInterval(interval);
-        if (callback) callback();
-      }
-    }, 5);
-  },
+    incrementShownWheat69(callback) {
+      const interval = setInterval(() => {
+        if (this.shownWheat69 < this.wheat69Count) {
+          this.shownWheat69++;
+        } else {
+          clearInterval(interval);
+          if (callback) callback();
+        }
+      }, 5);
+    },
 
-  incrementShownWheat69(callback) {
-    const interval = setInterval(() => {
-      if (this.shownWheat69 < this.wheat69Count) {
-        this.shownWheat69++;
-      } else {
-        clearInterval(interval);
-        if (callback) callback();
-      }
-    }, 5);
-  },
-
-  incrementShownWheat41(callback) {
-    const interval = setInterval(() => {
-      if (this.shownWheat41 < this.wheat41Count) {
-        this.shownWheat41++;
-      } else {
-        clearInterval(interval);
-        if (callback) callback();
-      }
-    }, 5);
-  },
+    incrementShownWheat41(callback) {
+      const interval = setInterval(() => {
+        if (this.shownWheat41 < this.wheat41Count) {
+          this.shownWheat41++;
+        } else {
+          clearInterval(interval);
+          if (callback) callback();
+        }
+      }, 5);
+    },
 
 
     logWheatCounts() {
@@ -239,6 +247,32 @@ incrementShownWheatBase(callback) {
 
 
 <style scoped>
+
+.graphic-title {
+  position: absolute;
+  bottom: 1rem;
+  right: 6rem;
+  font-size: 5em;
+  color: #B28F042f;
+  text-transform: uppercase;
+  line-height: 0.9;
+  transform: rotate(90deg);
+  transform-origin: bottom right;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.graphic-title h3 {
+  font-weight: 800;
+}
+
+.phase-pair-74 .graphic-title-41 {
+  position: absolute;
+  bottom: 1rem;
+  right: 11rem;
+  color:#f5f0e14f;
+}
+
 .land-ploughed-wheat {
   position: relative;
   width: calc(100vw - 12rem);
@@ -317,7 +351,7 @@ incrementShownWheatBase(callback) {
 }
 
 .phase-pair-74 .row-block p {
-  color: #820747; 
+  color: #820747;
 }
 
 .wheat-number,
@@ -334,10 +368,8 @@ incrementShownWheatBase(callback) {
   background-color: #f5f0e1;
 }
 
-/* Hover effect to change z-index */
 .phase-pair:hover {
   z-index: 10;
-  /* Temporarily bring to the front */
 }
 
 .phase-pair-base {
@@ -347,26 +379,27 @@ incrementShownWheatBase(callback) {
 
 .phase-pair-88 {
   top: 12%;
-  /* Adjust based on the percentage */
   background-color: #e2d3b4;
   height: 88%;
 }
 
 .phase-pair-74 {
   top: 26%;
-  /* Adjust based on the percentage */
   background-color: #d4bb97;
   height: 74%;
 }
 
 .wheat-field {
   display: flex;
-  justify-content: center;
-  /* center the .wheat-grid horizontally */
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
   padding-bottom: 1rem;
+  position: relative;
 }
 
 .wheat-grid {
+  position: relative;
   display: flex;
   flex-wrap: wrap-reverse;
   align-items: flex-end;
@@ -374,7 +407,11 @@ incrementShownWheatBase(callback) {
   height: 100%;
   justify-content: space-evenly;
   max-width: 100%;
-  /* prevents overflow */
+}
+
+.wheat-grid img {
+  position: relative;
+  z-index: 1;
 }
 
 img {
@@ -385,4 +422,13 @@ img.hidden {
   opacity: 0;
   transition: opacity 0.3s;
 }
+
+.wheat-grid-base, .wheat-grid-69 {
+  padding-right: 6rem;
+}
+
+.wheat-grid-41 {
+  padding-right: 11.5rem;
+}
+
 </style>
