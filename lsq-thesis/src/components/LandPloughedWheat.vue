@@ -4,15 +4,16 @@
     <div class="phase-pair phase-pair-base visible" :class="{ 'fade-in': firstPhaseStarted }">
       <div class="phase-content">
         <div class="text-block column-block">
-          <h3 class="base-title">The Feast Before the Flame</h3>
-          <h4 class="subtitle subtitle-base">2014–2019: When rains were kind and wheat flowed freely</h4>
+          <h4 class="base-title">The Feast Before the Flame</h4>
+          <h5 class="subtitle subtitle-base">Average wheat tonnage and hectares of land from 2014–2019</h5>
+          <h6 class="subtitle subtitle-base">When rains were kind and wheat flowed freely.</h6>
           <div class="phase-message phase-message-base"></div>
         </div>
         <div class="text-block row-block">
-          <p class="wheat-number">{{ shownWheatBase }}</p>
-          <p>ten thousand tons <br>of wheat yielded</p>
-          <p class="land-number">299</p>
-          <p>ten thousand <br>hectares of land</p>
+          <h4 class="wheat-number">{{ shownWheatBase }}</h4>
+          <p>ten thousand <br>tons of wheat</p>
+          <h4 class="land-number">299</h4>
+          <p>ten thousand <br>hectares</p>
         </div>
       </div>
       <div class="wheat-field">
@@ -22,7 +23,7 @@
             :style="{ width: imageSize + 'px', height: 'auto' }" />
         </div>
         <div class="graphic-title">
-          <h3>Wheat World</h3>
+          <h3>Wheat Drop</h3>
         </div>
       </div>
     </div>
@@ -31,15 +32,16 @@
     <div class="phase-pair phase-pair-88" :class="{ 'fade-in': firstPhaseStarted }">
       <div class="phase-content">
         <div class="text-block column-block">
-          <h3 class="title title-88">Scorched Rhythm</h3>
-          <h4 class="subtitle subtitle-88">2019–2024: Drought tested our resolve, but the harvest held</h4>
+          <h4 class="title title-88">Scorched Rhythm</h4>
+          <h5 class="subtitle subtitle-88">2019 through 2024 average wheat tonnage and hectares of land</h5>
+          <h6 class="subtitle subtitle-88">Drought tested our resolve, but the harvest held.</h6>
           <div class="phase-message phase-message-88"></div>
         </div>
         <div class="text-block row-block">
-          <p class="wheat-number">{{ shownWheat69 }}</p>
-          <p>ten thousand tons <br>of wheat yielded</p>
-          <p class="land-number">262</p>
-          <p>ten thousand <br>hectares of land</p>
+          <h4 class="wheat-number">{{ shownWheat69 }}</h4>
+          <p>ten thousand <br>tons of wheat</p>
+          <h4 class="land-number">{{ landValue88 }}</h4>
+          <p>ten thousand <br>hectares</p>
         </div>
       </div>
       <div class="wheat-field">
@@ -50,7 +52,7 @@
         </div>
       </div>
       <div class="graphic-title">
-        <h3>Wheat World</h3>
+        <h3>Wheat Drop</h3>
       </div>
     </div>
 
@@ -58,15 +60,16 @@
     <div class="phase-pair phase-pair-74" :class="{ 'fade-in': secondPhaseStarted }">
       <div class="phase-content">
         <div class="text-block column-block">
-          <h3 class="title title-74">Echoes of a Vanished Spring</h3>
-          <h4 class="subtitle subtitle-74">2025: A sudden drop — the fields rest, the future waits</h4>
+          <h4 class="title title-74">Echoes of a Vanished Spring</h4>
+          <h5 class="subtitle subtitle-74">The wheat yield and land usage for 2025</h5>
+          <h6 class="subtitle subtitle-74">A sudden drop — the fields rest, the future waits.</h6>
           <div class="phase-message phase-message-74"></div>
         </div>
         <div class="text-block row-block">
-          <p class="wheat-number">{{ shownWheat41 }}</p>
-          <p>ten thousand tons <br>of wheat yielded</p>
-          <p class="land-number">220</p>
-          <p>ten thousand <br>hectares of land</p>
+          <h4 class="wheat-number">{{ shownWheat41 }}</h4>
+          <p>ten thousand <br>tons of wheat</p>
+          <h4 class="land-number">{{ landValue74 }}</h4>
+          <p>ten thousand <br>hectares</p>
         </div>
       </div>
       <div class="wheat-field">
@@ -77,7 +80,7 @@
         </div>
       </div>
       <div class="graphic-title graphic-title-41">
-        <h3>Wheat<br>World</h3>
+        <h3>Wheat<br>Drop</h3>
       </div>
     </div>
   </div>
@@ -90,13 +93,15 @@ export default {
     return {
       firstPhaseStarted: false,
       secondPhaseStarted: false,
-      imageSize: 80,
+      imageSize: 70,
       wheatBaseCount: 607,
       wheat69Count: 420,
       wheat41Count: 246,
       shownWheatBase: 0,  // << ADD THIS
       shownWheat69: 0,
       shownWheat41: 0,
+      landValue88: 299, // Will count down to 262
+      landValue74: 262,  // Will count down to 220
       backgroundStyle: {
         backgroundColor: '#d9f0d9',
         transition: 'background-color 1s ease'
@@ -136,7 +141,7 @@ export default {
       const gridCols = Math.ceil(Math.sqrt(totalWheats));
       const imageMaxWidth = containerWidth / gridCols;
       const imageMaxHeight = containerHeight / gridCols;
-      this.imageSize = Math.floor(Math.min(imageMaxWidth, imageMaxHeight, 100));
+      this.imageSize = Math.floor(Math.min(imageMaxWidth, imageMaxHeight, 80));
     },
 
     observeIntersection() {
@@ -161,25 +166,23 @@ export default {
           this.incrementShownWheatBase(() => {
             console.timeEnd('Wheat Base Growth');
 
-            setTimeout(() => {  // <<< 1000ms DELAY before starting Phase 1
+            setTimeout(() => {
               this.firstPhaseStarted = true;
+              this.countDownLand88(); // ← Trigger countdown to 262
 
-              console.time('Wheat 69 Growth');
               this.incrementShownWheat69(() => {
                 console.timeEnd('Wheat 69 Growth');
 
-                setTimeout(() => { // <<< 1000ms DELAY before starting Phase 2
+                setTimeout(() => {
                   this.secondPhaseStarted = true;
+                  this.countDownLand74(); // ← Trigger countdown to 220
 
-                  console.time('Wheat 41 Growth');
                   this.incrementShownWheat41(() => {
                     console.timeEnd('Wheat 41 Growth');
                   });
-
-                }, 2000); // <<<< DELAY before phase 2
+                }, 2000);
               });
-
-            }, 2000); // <<< DELAY before phase 1
+            }, 2000);
           });
         }, 1000);
       }, 1000);
@@ -235,6 +238,28 @@ export default {
       }, 5);
     },
 
+    countDownLand88() {
+      const target = 262;
+      const interval = setInterval(() => {
+        if (this.landValue88 > target) {
+          this.landValue88--;
+        } else {
+          clearInterval(interval);
+        }
+      }, 20);
+    },
+
+    countDownLand74() {
+      const target = 220;
+      const interval = setInterval(() => {
+        if (this.landValue74 > target) {
+          this.landValue74--;
+        } else {
+          clearInterval(interval);
+        }
+      }, 20);
+    },
+
 
     logWheatCounts() {
       console.log(`Base Wheat Count: ${this.wheatBaseCount} wheat-base.svg images in phase-pair-base`);
@@ -247,7 +272,6 @@ export default {
 
 
 <style scoped>
-
 .graphic-title {
   position: absolute;
   bottom: 1rem;
@@ -260,6 +284,32 @@ export default {
   transform-origin: bottom right;
   z-index: 20;
   pointer-events: none;
+  text-align: right;
+}
+
+h4 {
+  text-align: left;
+  text-transform: uppercase;
+  font-size: 60px;
+  margin: 0;
+  font-weight: 300;
+  line-height: 1;
+}
+
+h5 {
+  text-align: left;
+  font-size: 28px;
+  font-weight: 300;
+  margin: 0;
+  line-height: 1.25;
+}
+
+h6 {
+  padding-top: 0.25rem;
+  text-align: left;
+  font-weight: 300;
+  font-size: 24px;
+  margin: 0;
 }
 
 .graphic-title h3 {
@@ -270,7 +320,11 @@ export default {
   position: absolute;
   bottom: 1rem;
   right: 11rem;
-  color:#f5f0e14f;
+  color: #f5f0e14f;
+}
+
+.graphic-title-41 {
+  margin-right: 5px;
 }
 
 .land-ploughed-wheat {
@@ -317,10 +371,12 @@ export default {
 .phase-content {
   display: flex;
   flex-direction: row;
+  padding-top: 5px;
 }
 
 /* first text-block: flex column */
 .column-block {
+  margin-left: 5px;
   width: 50%;
   display: flex;
   flex-direction: column;
@@ -333,32 +389,37 @@ export default {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-end;
-  align-items: flex-end;
   text-align: right;
+  font-size: 22px;
+  font-weight: 400;
+  margin-right: 5px;
 }
 
 .row-block p {
   padding-left: 10px;
-  font-weight: 600;
 }
 
-.phase-pair-base .row-block p {
-  color: #089c9d;
+.phase-pair-base .row-block p,
+.phase-pair-base .row-block h4 {
+  color: #A67A05;
+  /* color: #FF8000; */
 }
 
-.phase-pair-88 .row-block p {
-  color: #FF8000;
+.phase-pair-88 .row-block p,
+.phase-pair-88 .row-block h4 {
+  color: #D09910;
+  /* color: #FF8000; */
 }
 
-.phase-pair-74 .row-block p {
-  color: #820747;
+.phase-pair-74 .row-block p,
+.phase-pair-74 .row-block h4 {
+  color: white;
+  /* color: #820747; */
 }
 
 .wheat-number,
 .land-number {
   line-height: 1em;
-  font-size: 2.5em;
-  font-weight: 400;
   margin: 0;
   margin-left: 10px;
 }
@@ -390,6 +451,7 @@ export default {
 }
 
 .wheat-field {
+  padding-left: 10px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -412,9 +474,6 @@ export default {
 .wheat-grid img {
   position: relative;
   z-index: 1;
-}
-
-img {
   padding-top: 5px;
 }
 
@@ -423,12 +482,12 @@ img.hidden {
   transition: opacity 0.3s;
 }
 
-.wheat-grid-base, .wheat-grid-69 {
+.wheat-grid-base,
+.wheat-grid-69 {
   padding-right: 6rem;
 }
 
 .wheat-grid-41 {
   padding-right: 11.5rem;
 }
-
 </style>

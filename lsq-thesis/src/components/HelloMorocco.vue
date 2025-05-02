@@ -3,11 +3,11 @@
     <h1 class="droughts" ref="droughtsText">Droughts</h1>
     <div class="floods-fires-line">
       <h1 class="floods" ref="floodsText">Floods</h1>
-      <h2 class="rotated">and</h2>
+      <h4 class="rotated">and</h4>
       <div class="fires-placeholder" ref="firesText"></div>
     </div>
-    <h2 class="subtitle">A Case Study of Morocco and Climate Change</h2>
-    <h3 class="byline">Lisa Sakai Quinley</h3>
+    <h4 class="subtitle">A Case Study of Morocco and Climate Change</h4>
+    <h5 class="byline">Lisa Sakai Quinley</h5>
   </div>
 
   <canvas ref="noiseCanvas" style="display:none;"></canvas>
@@ -21,7 +21,7 @@
         </text>
       </clipPath>
     </defs>
-    <image :href="noiseDataUrl" width="909.766" height="160" clip-path="url(#droughts-clip)" />
+    <image :href="noiseDataUrl" width="1000.740" height="176" clip-path="url(#droughts-clip)" />
   </svg>
   <!-- SVG for Raindrops -->
   <svg ref="floodsSvg" class="floods-svg">
@@ -72,7 +72,7 @@ const droughtsSvg = ref(null)
 const noiseCanvas = ref(null)
 const noiseDataUrl = ref('')
 const droughtsText = ref(null)
-let droughtsHeight = 160 // or calculate from DOM
+let droughtsHeight = 176 // or calculate from DOM
 
 onMounted(async () => {
 
@@ -99,21 +99,21 @@ onMounted(async () => {
 
   // Set the position of the DROUGHTS SVG to be directly above the heading
   droughtsSvgNode.style.position = 'absolute';
-  droughtsSvgNode.style.left = `${droughtsTextRect.left+299}px`;
-  droughtsSvgNode.style.top = `${droughtsTextRect.top+16}px`; // Adjust the distance as needed
+  droughtsSvgNode.style.left = `${droughtsTextRect.left+300}px`;
+  droughtsSvgNode.style.top = `${droughtsTextRect.top+17}px`; // Adjust the distance as needed
   droughtsSvgNode.style.width = `${droughtsTextRect.width}px`;
-  droughtsSvgNode.style.height = '160px'; // Match the height of the SVG
+  droughtsSvgNode.style.height = '176px'; // Match the height of the SVG
 
   // Set the clipPath's position relative to the SVG height
   clipText.value.setAttribute('x', 0);
-  clipText.value.setAttribute('y', 160);
-  clipText.value.setAttribute('font-size', 160);
+  clipText.value.setAttribute('y', 176);
+  clipText.value.setAttribute('font-size', 176);
 
   function drawBackgroundNoise() {
     const canvas = noiseCanvas.value
     const ctx = canvas.getContext('2d')
-    const width = 909.766 // set based on text bounds
-    const height = 160
+    const width = 1000.740 // set based on text bounds
+    const height = 176
 
     canvas.width = width
     canvas.height = height
@@ -147,15 +147,15 @@ onMounted(async () => {
   // Position FIRES SVG
   const svgNode = firesSvg.value
   const group = d3.select(sparkGroup.value)
-  const width = 465.13
-  const height = 160
+  const width = 550
+  const height = 176
   const { x, y } = firesText.value.getBoundingClientRect()
 
   svgNode.setAttribute('width', width)
   svgNode.setAttribute('height', height)
   svgNode.style.position = 'fixed'
-  svgNode.style.left = `${x + 135}px`
-  svgNode.style.top = `${y + 40}px`
+  svgNode.style.left = `${x + 150}px`
+  svgNode.style.top = `${y + 42}px`
 
   clipText.value.setAttribute('x', 0)
   clipText.value.setAttribute('y', height * 0.75)
@@ -267,8 +267,8 @@ function createSparks(group, svgNode) {
 function renderRaindrops(svgEl, numDrops = 100) {
   if (!svgEl) return
 
-  const width = 636
-  const height = 150
+  const width = 699.953
+  const height = 176
   const svg = d3.select(svgEl)
 
   svg.attr('width', width)
@@ -349,15 +349,16 @@ body {
 
 h1 {
   text-transform: uppercase;
-  font-size: 10em;
+  font-size: 11rem;
   margin: 0;
   line-height: 1;
 }
 
-h2 {
+h4 {
   text-transform: uppercase;
-  font-size: 3em;
-  margin: 0;
+    font-size: 54px;
+    margin: 0;
+    font-weight: 300;
 }
 
 .subtitle {
@@ -365,15 +366,15 @@ h2 {
 }
 
 .byline {
-  font-size: 1.5em;
-  margin-top: 0.75em;
+  font-size: 28px;
   font-weight: 300;
+  margin-top: 0.75em;
 }
 
 .floods-fires-line {
   display: flex;
   align-items: baseline;
-  gap: 0.5em;
+  gap: 0.75em;
 }
 
 .rotated {
@@ -383,6 +384,10 @@ h2 {
   align-self: center;
   position: relative;
   top: 0.15em;
+}
+
+.droughts {
+  margin-bottom: -40px;
 }
 
 /* === Colored Headings === */
@@ -409,8 +414,8 @@ h2 {
 }
 
 .fires-placeholder {
-  width: 465.13px;
-  height: 160px;
+  width: 500px;
+  height: 176px;
   position: relative;
 }
 </style>

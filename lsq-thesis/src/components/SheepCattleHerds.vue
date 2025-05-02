@@ -8,8 +8,14 @@
     <!-- White padded boundary -->
     <div class="herd-padding-wrapper">
       <div class="herd-text" ref="herdText" :class="{ 'visible': textStage !== 'initial' }">
-        <h3 v-if="textStage === 'reducing'">2014: The Grazeful Era</h3>
-        <h3 v-else-if="textStage === 'complete'">2025: Desperately Seeking Grass</h3>
+        <div class="title-row" v-if="textStage === 'reducing'">
+          <h4>2014</h4>
+          <h5>The Grazeful Era</h5>
+        </div>
+        <div class="title-row" v-else-if="textStage === 'complete'">
+          <h4>2025</h4>
+          <h5>Desperately Seeking Grass</h5>
+        </div>
         <p v-if="textStage === 'reducing'">
           Imagine a herd of sheep and cattle, grazing peacefully in the fields of Morocco.
         </p>
@@ -18,10 +24,10 @@
             According to official figures, Morocco's cattle and sheep herds have decreased
             by 38% in 2025 since the last census nine years ago, in 2014, due to consecutive
             droughts.</p>
-          <p>
+<!--           <p>
             And with Morocco in the sixth year of the drought, the Moroccan government has even
             asked its citizens not to slaughter sheep for the upcoming holiday Eid al-Adha.
-          </p>
+          </p> -->
         </div>
       </div>
 
@@ -139,7 +145,7 @@ export default {
         {
           left: textLeft - 10,
           top: textTop - 10,
-          right: textLeft + textRect.width + 10,
+          right: textLeft + textRect.width - 100,
           bottom: textTop + textRect.height + 10,
         },
         {
@@ -214,7 +220,7 @@ export default {
         // Update the percentage accordingly
         const remainingPercent = Math.round((this.displayedHerd.length / this.herd.length) * 100);
         this.finalPercentage = Math.max(remainingPercent, 62); // Don’t go below 62%
-      }, 100);
+      }, 250);
     },
 
     startCountdown() {
@@ -327,12 +333,37 @@ export default {
   color: #8a6e003f;
   text-transform: uppercase;
 }
+
 .graphic-title h3 {
   font-weight: 800;
 }
 
+h4 {
+  text-transform: uppercase;
+  font-size: 60px;
+  line-height: 1;
+  font-weight: 300;
+}
+
+h5 {
+  text-align: left;
+  font-size: 28px;
+  font-weight: 300;
+}
+
 p {
-  font-size: 16px;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.title-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline; /* keeps the baseline of text aligned nicely */
+}
+.title-row h4,
+.title-row h5 {
+  margin: 0;
 }
 
 .sheep-cattle-herds {
@@ -362,7 +393,7 @@ p {
 }
 
 .herd-text {
-  width: 45%;
+  width: 30%;
   margin: 0 auto;
   opacity: 0;
   visibility: hidden;
@@ -370,10 +401,9 @@ p {
   position: absolute;
   top: 0;
   left: 0;
-  padding-top: 5px;
-  padding-left: 10px;
+  padding-top: 15px;
+  padding-left: 20px;
   z-index: 3;
-  /* Place the text above everything else */
   text-align: left;
 }
 
@@ -413,6 +443,7 @@ p {
   object-fit: contain;
   position: absolute;
   transition: transform 0.5s ease, opacity 0.5s ease;
+  width: 100px;
 }
 
 .countdown-container {
@@ -421,7 +452,7 @@ p {
   left: 50%;
   transform: translateX(-50%);
   font-size: 2rem;
-  color: black;
+  color: darkgreen;
   z-index: 2;
   /* Ensures it is above everything */
 }
@@ -450,7 +481,7 @@ p {
   pointer-events: none;
 }
 
-@media screen and (min-width: 1901px) {
+/* @media screen and (min-width: 1901px) {
   .herd-image {
     width: 100px;
     height: 100px;
@@ -478,5 +509,5 @@ p {
   .countdown-text {
     font-size: 10ch;
   }
-}
+} */
 </style>

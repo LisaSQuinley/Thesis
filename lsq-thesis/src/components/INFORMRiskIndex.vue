@@ -19,46 +19,49 @@
 
       <!-- Radio Filters -->
       <div class="filter-controls" v-if="isVisible">
-  <div class="radio-group">
-    <label>
-      <input type="radio" v-model="riskColumn" value="inform_risk" />
-      INFORM Risk Index
-    </label>
-    <div class="descriptor">A score that measures how likely a country is to face crises and how much help it might need, based on three factors: Hazards & Exposure, Vulnerability, and Lack of Coping Capacity.</div>
-  </div>
+        <div class="radio-group">
+          <label>
+            <input type="radio" v-model="riskColumn" value="inform_risk" />
+            INFORM Risk Index
+          </label>
+          <div class="descriptor">A score that measures how likely a country is to face crises and how much help it
+            might
+            need, based on three factors: Hazards & Exposure, Vulnerability, and Lack of Coping Capacity.</div>
+        </div>
 
-  <div class="radio-group">
-    <label>
-      <input type="radio" v-model="riskColumn" value="hazard_and_exposure" />
-      Hazard & Exposure
-    </label>
-    <div class="descriptor">How much danger a country faces from storms, floods, earthquakes, and other events.</div>
-  </div>
+        <div class="radio-group">
+          <label>
+            <input type="radio" v-model="riskColumn" value="hazard_and_exposure" />
+            Hazard & Exposure
+          </label>
+          <div class="descriptor">How much danger a country faces from storms, floods, earthquakes, and other events.
+          </div>
+        </div>
 
-  <div class="radio-group">
-    <label>
-      <input type="radio" v-model="riskColumn" value="vulnerability" />
-      Vulnerability
-    </label>
-    <div class="descriptor">How badly people and places could be hurt when disasters happen.</div>
-  </div>
+        <div class="radio-group">
+          <label>
+            <input type="radio" v-model="riskColumn" value="vulnerability" />
+            Vulnerability
+          </label>
+          <div class="descriptor">How badly people and places could be hurt when disasters happen.</div>
+        </div>
 
-  <div class="radio-group">
-    <label>
-      <input type="radio" v-model="riskColumn" value="lack_of_coping_capacity" />
-      Lack of Coping Capacity
-    </label>
-    <div class="descriptor">How ready a country is to handle emergencies and help its people.</div>
-  </div>
-</div>
+        <div class="radio-group">
+          <label>
+            <input type="radio" v-model="riskColumn" value="lack_of_coping_capacity" />
+            Lack of Coping Capacity
+          </label>
+          <div class="descriptor">How ready a country is to handle emergencies and help its people.</div>
+        </div>
+      </div>
 
 
       <!-- INFORM Risk Index Chart -->
-<div class="chart-container" v-if="isVisible" v-show="selectedCountries.length > 0">
-  <button class="reset-button" @click="deselectAllCountries">X</button>
-  <div class="column-info"></div>
-  <div id="INFORM-chart" class="multi-chart-container"></div>
-</div>
+      <div class="chart-container" v-if="isVisible" v-show="selectedCountries.length > 0">
+        <button class="reset-button" @click="deselectAllCountries">X</button>
+        <div class="column-info"></div>
+        <div id="INFORM-chart" class="multi-chart-container"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -149,7 +152,7 @@ const geoJsonStyle = (feature) => {
   );
   return {
     fillColor: riskValue !== null && riskValue !== undefined ? colorScale(riskValue) : "#D3D3D3",
-    weight: isSelected ? 5 : 1,
+    weight: isSelected ? 5 : 2,
     opacity: 1,
     color: isSelected ? "#089c9d" : "#089c9d",
     fillOpacity: 1
@@ -608,7 +611,7 @@ onBeforeUnmount(() => {
     observer.unobserve(componentRoot.value);
   }
   window.removeEventListener("resize", handleResize);
-  
+
 });
 
 const deselectAllCountries = () => {
@@ -696,6 +699,8 @@ l-map {
   max-height: calc(100% - 12rem);
   z-index: 1000;
   background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   overflow: auto;
 
   /* animation settings */
@@ -710,7 +715,7 @@ l-map {
 h3 {
   font-size: 5em;
   font-weight: 800;
-  color: #089d9d2f;
+  color: #089d9d4f;
   text-transform: uppercase;
   position: absolute;
   bottom: 5rem;
@@ -738,8 +743,9 @@ h4 {
 }
 
 .leaflet-container {
-  background-color: #40E0D05d;
+  background-color: #40E0D0;
 }
+
 .filter-controls {
   position: absolute;
   bottom: 5rem;
@@ -747,26 +753,46 @@ h4 {
   z-index: 1000;
   padding: 10px;
   text-align: left;
+  width: 30%;
 }
 
 .radio-group {
   margin-bottom: .25rem;
+  position: relative;
 }
 
+.radio-group:hover .descriptor {
+  max-height: 500px; /* adjust as needed */
+  opacity: 1;
+}
+
+/* treat like an h5 */
 .filter-controls label {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-weight: bold;
-  font-size: 18px;
+  font-size: 28px;
+  font-weight: 300;
 }
 
+.radio-group label:hover + .descriptor,
+.radio-group input:hover + .descriptor {
+  max-height: 500px; /* large enough for your longest descriptor */
+  opacity: 1;
+}
+
+/* treat like a global p */
 .descriptor {
-  margin-left: 1.75rem; /* <<< instead of 1.5em */
+  padding-left: 5px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  margin-left: 1.75rem;
+  font-weight: 400;
   margin-bottom: 0.5em;
-  font-size: 16px;
+  font-size: 22px;
   color: #2c3e50;
-  pointer-events: none;
 }
 
 input[type="radio"] {
@@ -775,8 +801,8 @@ input[type="radio"] {
   background-color: #fff;
   border: 2px solid #089d9d82;
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   position: relative;
 }
@@ -788,14 +814,15 @@ input[type="radio"]:checked {
 input[type="radio"]:checked::before {
   content: "";
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 8px;
-  height: 8px;
+  top: 3px;
+  left: 3px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #089c9d;
 }
 
+/* 
 @media screen and (min-width: 1701px) {
   .descriptor {
     width: 30%;
@@ -812,7 +839,8 @@ input[type="radio"]:checked::before {
   .filter-controls {
     width: calc(100% - 12rem);
   }
-}
+} 
+*/
 
 .reset-button {
   position: absolute;

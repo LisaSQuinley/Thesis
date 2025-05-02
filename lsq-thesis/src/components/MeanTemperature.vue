@@ -1,7 +1,7 @@
 <template>
     <div ref="wrapperRef" class="temperature-wrapper unified-heatmap">
         <div class="title" v-show="showTitle">
-            <h3>Burn, Baby, Burn.</h3>
+            <h3>Future Heat</h3>
         </div>
         <div class="top-bar">
             <!-- <h3></h3> -->
@@ -535,7 +535,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .title {
     position: absolute;
-    bottom: 10.5rem;
+    bottom: 10rem;
     right: 11.25rem;
     font-size: 5rem;
     color: #FF00003f;
@@ -549,6 +549,7 @@ onBeforeUnmount(() => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
+    margin-right: 5.75rem;
     /* gap: 2rem; */
 }
 
@@ -819,15 +820,18 @@ input:checked+.slider {
 
 h4 {
     text-align: left;
-    font-size: 22px;
+    text-transform: uppercase;
+    font-size: 60px;
     margin: 0;
+    font-weight: 300;
     line-height: 1;
 }
 
 h5 {
     padding-top: 0.25rem;
     text-align: left;
-    font-size: 20px;
+    font-size: 28px;
+    font-weight: 300;
     margin: 0;
     line-height: 1.25;
 }
@@ -835,12 +839,13 @@ h5 {
 h6 {
     padding-top: 0.25rem;
     text-align: left;
-    font-size: 18px;
+    font-weight: 300;
+    font-size: 24px;
     margin: 0;
 }
 
 p {
-    font-size: 18px;
+    font-size: 22px;
     margin: 0;
     text-align: left;
     font-weight: 400;

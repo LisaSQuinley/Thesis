@@ -1,6 +1,6 @@
 <template>
   <div id="scrollyteller">
-    <div class="tab-container">
+    <div class="left-tab-container">
       <div v-for="(title, i) in visibleTitles" :key="i" :class="['tab', { active: i + 1 === activeStep }]"
         :style="i + 1 === activeStep ? { color: getTabColor(i), borderLeftColor: getTabColor(i) } : {}"
         @click="goToStep(i + 1)">
@@ -13,12 +13,31 @@
       <component :is="stepComponent" />
     </div>
 
-    <div class="footer">
-      <p>
-        To check out other projects Lisa has created, visit
-        <a href="https://lsq.design" target="_blank" rel="noopener">lsq.design</a>.
-      </p>
+    <div class="right-tab-container">
+      <div class="tab" :class="{ active: showMethodology }" @click="showMethodology = !showMethodology">
+        Methodology
+      </div>
+
+      <a class="tab" href="https://lsq.design" target="_blank" rel="noopener">lsq.design</a>
     </div>
+
+    <!-- Methodology Panel -->
+    <div v-if="showMethodology" class="methodology-panel">
+      <h5>Methodology</h5>
+      <h6>Zooming Into Risk</h6>
+      <p>This section describes the methodology behind the visualizations...</p>
+      <h6>Raincheck Forever</h6>
+      <p>You can include multiple <code>&lt;h&gt;</code> and <code>&lt;p&gt;</code> tags here.</p>
+      <h6>Future Heat</h6>
+      <p>This section describes the methodology behind the visualizations...</p>
+      <h6>Pasture Panic</h6>
+      <p>You can include multiple <code>&lt;h&gt;</code> and <code>&lt;p&gt;</code> tags here.</p>
+      <h6>Wheat Drop</h6>
+      <p>This section describes the methodology behind the visualizations...</p>
+      <h6>Climate Survival Kit</h6>
+      <p>You can include multiple <code>&lt;h&gt;</code> and <code>&lt;p&gt;</code> tags here.</p>
+    </div>
+
   </div>
 </template>
 
@@ -54,6 +73,7 @@ export default {
   },
   data() {
     return {
+      showMethodology: false,
       steps: [
         'HelloMorocco',
         'INFORMRiskIndex',
@@ -68,9 +88,9 @@ export default {
         'Hello Morocco',
         'Zooming Into Risk',
         'Raincheck Forever',
-        'Burn, Baby, Burn.',
+        'Future Heat',
         'Pasture Panic',
-        'Wheat World',
+        'Wheat Drop',
         'Climate Survival Kit',
         'Doomed Forever?',
       ],
@@ -94,7 +114,7 @@ export default {
         case 'INFORMRiskIndex':
           return '#089d9d';
         case 'RainfallPrecipitation':
-          return '#40E0D0'; 
+          return '#40E0D0';
         case 'MeanTemperature':
           return '#FF0000';
         case 'SheepCattleHerds':
@@ -218,24 +238,32 @@ h3 {
 }
 
 h4 {
-  font-size: 1em;
+  text-transform: uppercase;
+  font-size: 60px;
+  font-weight: 300;
   margin: 0;
 }
 
 h5 {
-  font-size: 0.8em;
+  text-align: left;
   margin: 0;
+  font-size: 28px;
+  font-weight: 300;
 }
 
 h6 {
-  font-size: 0.6em;
+  padding-top: 1rem;
+  text-align: left;
+  font-weight: 300;
+  font-size: 24px;
   margin: 0;
 }
 
 p {
-  font-size: 1em;
+  font-size: 16px;
   margin: 0;
   text-align: left;
+  font-weight: 400;
 }
 
 text {
@@ -243,7 +271,7 @@ text {
   margin: 0;
 }
 
-.tab-container {
+.left-tab-container {
   position: fixed;
   top: 50%;
   left: 0;
@@ -262,14 +290,61 @@ text {
   padding: 10px 5px;
   cursor: pointer;
   font-size: 0.9em;
-  color: #2c3e504f;
-  border-left: 3px solid transparent;
+  color: #2c3e50;
+  border-left: 2px solid transparent;
   transition: all 0.2s ease;
 }
 
 .tab.active {
   color: #000;
-  border-left: 3px solid #000;
+  border-left: 2px solid #000;
   font-weight: bold;
+}
+
+.right-tab-container {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+  padding-right: 10px;
+}
+
+.right-tab-container .tab {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(0deg);
+  padding: 10px 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: #2c3e50;
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.right-tab-container .tab.active {
+  color: #000;
+  border-left: 2px solid #000;
+  font-weight: bold;
+}
+
+.methodology-panel {
+  position: fixed;
+  right: 70px;
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: 1000px;
+  background-color: white;
+  padding: 13px 20px 17px 20px;
+  z-index: 20;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  max-height: 80vh;
+  z-index: 1000;
 }
 </style>
