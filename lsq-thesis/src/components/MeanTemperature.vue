@@ -535,8 +535,8 @@ onBeforeUnmount(() => {
 <style scoped>
 .title {
     position: absolute;
-    bottom: 10rem;
-    right: 11.25rem;
+    bottom: 7rem;
+    right: 10.5rem;
     font-size: 5rem;
     color: #FF00003f;
     text-transform: uppercase;
@@ -553,12 +553,6 @@ onBeforeUnmount(() => {
     /* gap: 2rem; */
 }
 
-/* 
-.top-bar h3 {
-  margin: 0;
-  white-space: nowrap;
-}
- */
 .legend {
     /* flex: 1; */
     display: flex;
@@ -573,10 +567,10 @@ onBeforeUnmount(() => {
 .temperature-wrapper {
     position: relative;
     height: 100vh;
-    width: 100vw;
+    width: calc(100vw - 6rem);
     display: flex;
     flex-direction: column;
-    padding: 4rem 5rem 8rem 5rem;
+    padding: 4rem 4rem 5rem 4rem;
     box-sizing: border-box;
     overflow: hidden;
 }

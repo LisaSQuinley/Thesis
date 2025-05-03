@@ -301,7 +301,7 @@ body {
   justify-content: center;
   align-items: center;
   height: calc(100vh - 11rem);
-  width: calc(100vw - 13rem);
+  width: calc(100vw - 14rem);
 }
 
 .map-wrapper {

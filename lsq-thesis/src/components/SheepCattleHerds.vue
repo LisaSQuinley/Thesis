@@ -145,7 +145,7 @@ export default {
         {
           left: textLeft - 10,
           top: textTop - 10,
-          right: textLeft + textRect.width - 100,
+          right: textLeft + textRect.width + 10,
           bottom: textTop + textRect.height + 10,
         },
         {
@@ -191,7 +191,7 @@ export default {
           ...animal,
           style: {
             position: "absolute",
-            left: `${pos.x - animalSize / 15}px`,
+            left: `${pos.x - animalSize / 4}px`,
             top: `${pos.y - animalSize / 15}px`,
           },
         };
@@ -368,8 +368,8 @@ p {
 
 .sheep-cattle-herds {
   position: relative;
-  width: calc(100vw - 11rem);
-  height: calc(100vh - 10rem - 20px);
+  width: calc(100vw - 13.5rem);
+  height: calc(100vh - 12rem);
   overflow: hidden;
 }
 
@@ -415,17 +415,14 @@ p {
 .svg-container {
   transition: opacity 1s ease;
   position: absolute;
-  top: 20%;
   /* Adjust the position relative to the text */
-  left: 50%;
   /* Center horizontally */
-  transform: translateX(-50%);
   /* Center horizontally */
   opacity: 1;
   /* Adjust opacity for visibility */
   z-index: 2;
   /* Ensure the SVG appears above the background, but below the herd images */
-  width: 95%;
+  width: 100%;
   /* Set width to desired value */
   opacity: 0.75;
 }

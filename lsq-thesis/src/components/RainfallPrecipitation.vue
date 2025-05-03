@@ -177,7 +177,7 @@ function renderPrecipitationCircles(combinedData, svgEl, column, unitPerEllipse)
 
   svg.selectAll("*").remove();
 
-  const margin = { top: 20, right: 20, bottom: 60, left: 60 };
+  const margin = { top: 20, right: 20, bottom: 30, left: 60 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
 
@@ -465,8 +465,9 @@ body,
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: calc(100vw - 5rem);
   box-sizing: border-box;
-  padding: 4rem 5rem 5rem 5rem;
+  padding: 4rem 4rem 4rem 4rem;
   overflow: auto;
   opacity: 0;
   transition: opacity 1s ease-in-out;
@@ -502,7 +503,6 @@ body,
   height: 100%;
   flex: 1;
   overflow: hidden;
-  /* Prevent overflow of chart content */
 }
 
 .bar-chart-content {

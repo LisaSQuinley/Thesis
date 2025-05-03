@@ -3,17 +3,8 @@
     <h3 class="title">Climate Survival Kit</h3>
 
     <div class="video-viewer">
-      <video
-        ref="copingVideo"
-        loop
-        muted
-        playsinline
-        class="coping-video"
-      >
-        <source
-          src="@/assets/coping-mechanisms/Coping-Mechanisms_Animation.mp4"
-          type="video/mp4"
-        />
+      <video ref="copingVideo" loop muted playsinline class="coping-video">
+        <source src="@/assets/coping-mechanisms/Coping-Mechanisms_Animation.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
@@ -139,11 +130,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrolling */
+  height: 100%;
+  width: 100%;
+}
+
 .coping-container {
   padding: 4rem 5rem 5rem 5rem;
   position: relative;
-  height: calc(100vh - 10rem);
-  width: 100vw;
+  height: calc(100vh - 11rem);
+  width: calc(100vw - 14rem);
   overflow: hidden;
 }
 
@@ -167,15 +167,17 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
   height: 100%;
+  width: 100%;
   overflow: hidden;
 }
+
 
 .coping-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .video-toggle {
@@ -212,4 +214,5 @@ onUnmounted(() => {
   z-index: 999;
   transition: opacity 0.5s ease-in-out;
 }
+
 </style>

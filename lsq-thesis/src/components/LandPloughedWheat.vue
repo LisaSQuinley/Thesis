@@ -329,8 +329,8 @@ h6 {
 
 .land-ploughed-wheat {
   position: relative;
-  width: calc(100vw - 12rem);
-  height: calc(100vh - 13rem);
+  width: calc(100vw - 14rem);
+  height: calc(100vh - 12rem);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -377,14 +377,14 @@ h6 {
 /* first text-block: flex column */
 .column-block {
   margin-left: 5px;
-  width: 50%;
+  width: 60%;
   display: flex;
   flex-direction: column;
 }
 
 /* second text-block: flex row */
 .row-block {
-  width: 50%;
+  width: 40%;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;

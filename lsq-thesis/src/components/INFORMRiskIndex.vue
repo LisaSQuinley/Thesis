@@ -55,6 +55,12 @@
         </div>
       </div>
 
+      <div class="legend-container">
+  <div class="legend-item" v-for="(label, index) in legendLabels" :key="index">
+    <div class="legend-color" :style="{ backgroundColor: legendColors[index] }"></div>
+    <div class="legend-label">{{ label }}</div>
+  </div>
+</div>
 
       <!-- INFORM Risk Index Chart -->
       <div class="chart-container" v-if="isVisible" v-show="selectedCountries.length > 0">
@@ -80,6 +86,24 @@ const riskColumn = ref("inform_risk");
 const windowWidth = ref(window.innerWidth);
 const selectedCountries = ref([]);
 const ultimateBarHeight = 40;
+
+const legendLabels = [
+  "0–2",
+  "2–4",
+  "4–6",
+  "6–8",
+  "8–10",
+  "No Data"
+];
+
+const legendColors = [
+  "#7FFF00",
+  "#FFFF00",
+  "#FF8000",
+  "#FF0000",
+  "#820747",
+  "#D3D3D3"
+];
 
 let riskData = [];
 
@@ -631,8 +655,6 @@ const deselectAllCountries = () => {
   }
 };
 
-
-
 </script>
 
 <style scoped>
@@ -644,7 +666,7 @@ const deselectAllCountries = () => {
   height: 100%;
   width: 100%;
   box-sizing: border-box;
-  padding: 4rem 5rem 5rem 5rem;
+  padding: 4rem 5.75rem 5rem 5.75rem;
 }
 
 .content {
@@ -743,8 +765,8 @@ h4 {
 
 .filter-controls {
   position: absolute;
-  bottom: 5rem;
-  left: 5.25rem;
+  bottom: 8rem;
+  left: 6rem;
   z-index: 1000;
   padding: 10px;
   text-align: left;
@@ -832,6 +854,31 @@ input[type="radio"]:checked::before {
 
 .reset-button:hover {
   background-color: #089d9d;
+}
+
+.legend-container {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  left: 7rem;
+  bottom: 6rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #089c9d;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #089c9d;
 }
 </style>
 

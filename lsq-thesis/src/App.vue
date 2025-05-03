@@ -38,6 +38,14 @@
       <h6>Disaster Time Machine</h6>
       <p>You can include multiple <code>&lt;h&gt;</code> and <code>&lt;p&gt;</code> tags here.</p>
     </div>
+    <div class="png-animation-container">
+      <img v-for="n in 10" :key="n" :src="getWheatSrc()" class="png-frame wheat" :style="animationTriggered ? {
+        animation: `wiltDown 1s ease-out forwards`,
+        animationDelay: `${10 - n}s`
+      } : {}" alt="Wheat" />
+      <img :src="getSheepSrc()" class="png-frame sheep"
+        :style="animationTriggered ? { animation: 'slideInSheep 1s ease-out 1s forwards' } : {}" alt="Sheep" />
+    </div>
   </div>
 </template>
 
@@ -75,6 +83,7 @@ export default {
   },
   data() {
     return {
+      animationTriggered: false,
       showMethodology: false,
       steps: [
         'HelloMorocco',
@@ -101,11 +110,22 @@ export default {
   },
   mounted() {
     window.addEventListener('keydown', this.handleKeyPress)
+
+    setTimeout(() => {
+      this.animationTriggered = true
+    }, 3000)
+    window.addEventListener('keydown', this.handleKeyPress)
   },
   beforeUnmount() {
     window.removeEventListener('keydown', this.handleKeyPress)
   },
   methods: {
+    getWheatSrc() {
+      return new URL('@/assets/wheat/wheat-title.svg', import.meta.url).href;
+    },
+    getSheepSrc() {
+      return new URL('@/assets/sheep-intro.png', import.meta.url).href;
+    },
     setActiveStep(index) {
       if (index === this.activeStep) return // prevent duplicate updates
       this.activeStep = index
@@ -180,11 +200,12 @@ export default {
 
 <style>
 #scrollyteller {
+  position: relative;
+  /* Add this */
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
   height: 100vh;
 }
-
 
 body,
 html {
@@ -195,6 +216,7 @@ html {
 
 
 .charts-wrapper {
+  flex-direction: column;
   scroll-snap-align: start;
   height: 100vh;
   width: 100vw;
@@ -361,8 +383,85 @@ text {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   max-height: 80vh;
-  z-index: 1000;
+  z-index: 9000;
 
-  animation: slideInFromRight 0.5s ease-out forwards;
+  animation: slideInPanel 0.5s ease-out forwards;
+}
+
+.png-animation-container {
+  position: absolute;
+  top: 21.85rem;
+  left: 22rem;
+  width: 100%;
+  height: 5rem;
+  display: flex;
+  justify-content: left;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.png-frame {
+  width: 100px;
+  margin-right: -5px;
+  height: auto;
+  opacity: 1;
+  /* <-- visible by default */
+  transform: scaleX(1);
+  /* <-- full width */
+  transform-origin: right bottom;
+}
+
+.png-frame.wheat {
+  opacity: 0.9;
+  transform-origin: bottom center;
+  z-index: 0;
+}
+
+.wilt {
+  animation: wiltDown 1s ease-out forwards;
+}
+
+.png-frame.sheep {
+  padding-left: 25px;
+  width: 90px;
+  opacity: 0;
+  z-index: 1;
+}
+
+@keyframes wiltDown {
+  0% {
+    opacity: 0.9;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+@keyframes slideInSheep {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInPanel {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0%);
+    opacity: 1;
+  }
 }
 </style>
