@@ -79,6 +79,7 @@ let droughtsHeight = 176 // Adjust based on DOM or specific requirements
 
 // On mounted logic
 onMounted(async () => {
+  await nextTick()
   if (droughtColorTimer) droughtColorTimer.stop()
 
   // Drought color animation
@@ -143,6 +144,7 @@ function setDroughtsSvgPosition() {
 
 function setFiresSvgPosition() {
   const svgNode = firesSvg.value
+  // eslint-disable-next-line no-unused-vars
   const group = d3.select(sparkGroup.value)
   const { x, y } = firesText.value.getBoundingClientRect()
 
@@ -209,12 +211,14 @@ function drawBackgroundNoise() {
 function setupIntersectionObservers() {
   // Droughts Observer
   const droughtsObserver = new IntersectionObserver(([entry]) => {
+  if (droughtsSvg.value && droughtsText.value) {
     droughtsSvg.value.style.display = entry.isIntersecting ? 'block' : 'none'
-  }, { threshold: 0.1 })
-
-  if (droughtsText.value instanceof Element) {
-    droughtsObserver.observe(droughtsText.value)
   }
+}, { threshold: 0.1 })
+
+if (droughtsText.value instanceof Element) {
+  droughtsObserver.observe(droughtsText.value)
+}
 
   // Fires Observer
   firesObserver = new IntersectionObserver(([entry]) => {
