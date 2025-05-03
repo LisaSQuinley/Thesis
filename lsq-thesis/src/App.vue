@@ -6,7 +6,6 @@
         @click="goToStep(i + 1)">
         {{ title }}
       </div>
-
     </div>
     <div v-for="(stepComponent, index) in steps" :key="index" class="charts-wrapper"
       v-intersect="() => setActiveStep(index)">
@@ -36,8 +35,9 @@
       <p>This section describes the methodology behind the visualizations...</p>
       <h6>Climate Survival Kit</h6>
       <p>You can include multiple <code>&lt;h&gt;</code> and <code>&lt;p&gt;</code> tags here.</p>
+      <h6>Disaster Time Machine</h6>
+      <p>You can include multiple <code>&lt;h&gt;</code> and <code>&lt;p&gt;</code> tags here.</p>
     </div>
-
   </div>
 </template>
 
@@ -65,10 +65,12 @@ export default {
   },
   computed: {
     visibleSteps() {
-      return this.steps.slice(1, -1)
+      return this.steps.slice(1)
+      /* return this.steps.slice(1, -1) */
     },
     visibleTitles() {
-      return this.stepTitles.slice(1, -1)
+      return this.stepTitles.slice(1)
+      /* return this.stepTitles.slice(1, -1) */
     },
   },
   data() {
@@ -92,7 +94,7 @@ export default {
         'Pasture Panic',
         'Wheat Drop',
         'Climate Survival Kit',
-        'Doomed Forever?',
+        'Disaster Time Machine',
       ],
       activeStep: 0,
     }
@@ -122,6 +124,8 @@ export default {
         case 'LandPloughedWheat':
           return '#B28F04';
         case 'CopingMechanisms':
+          return '#85B738';
+        case 'DoomedForever':
           return '#820747';
         default:
           return '#000'; // default
@@ -332,11 +336,23 @@ text {
   font-weight: bold;
 }
 
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
 .methodology-panel {
   position: fixed;
   right: 70px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 25%;
   max-width: 1000px;
   background-color: white;
   padding: 13px 20px 17px 20px;
@@ -346,5 +362,7 @@ text {
   overflow-y: auto;
   max-height: 80vh;
   z-index: 1000;
+
+  animation: slideInFromRight 0.5s ease-out forwards;
 }
 </style>

@@ -642,25 +642,20 @@ const deselectAllCountries = () => {
   flex-direction: column;
   position: relative;
   height: 100%;
-  /* Fill the height of parent instead of viewport */
   width: 100%;
   box-sizing: border-box;
-  /* Respect parent padding if any */
   padding: 4rem 5rem 5rem 5rem;
 }
 
 .content {
   flex: 1;
-  /* Take up the remaining space */
   display: flex;
   justify-content: space-between;
   align-items: stretch;
   width: 100%;
   overflow: hidden;
-  /* Prevent content from spilling */
 }
 
-/* Map container */
 .map-container {
   width: 100%;
   height: 100%;
@@ -693,7 +688,7 @@ l-map {
 
 .chart-container {
   position: absolute;
-  bottom: 6.5rem;
+  top: 5.5rem;
   right: 6.5rem;
   width: calc(50% - 7.5rem);
   max-height: calc(100% - 12rem);
@@ -821,26 +816,6 @@ input[type="radio"]:checked::before {
   border-radius: 50%;
   background: #089c9d;
 }
-
-/* 
-@media screen and (min-width: 1701px) {
-  .descriptor {
-    width: 30%;
-  }
-}
-
-@media screen and (max-width: 1700px) and (min-width: 1001px) {
-  .descriptor {
-    width: 50%;
-  }
-}
-
-@media screen and (max-width: 999px) {
-  .filter-controls {
-    width: calc(100% - 12rem);
-  }
-} 
-*/
 
 .reset-button {
   position: absolute;
