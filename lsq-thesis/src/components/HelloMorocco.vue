@@ -9,49 +9,65 @@
       </div>
       <h4 class="subtitle">A Case Study of Morocco and Climate Change</h4>
       <h5 class="byline">Lisa Sakai Quinley</h5>
+
+      <canvas ref="noiseCanvas" style="display:none;"></canvas>
+
+      <!-- Droughts mask applied via SVG -->
+      <svg ref="droughtsSvg" class="droughts-svg">
+        <defs>
+          <clipPath id="droughts-clip">
+            <text x="0" :y="droughtsHeight * 0.75" :font-size="droughtsHeight" font-family="Parkinsans"
+              font-weight="800">
+              DROUGHTS
+            </text>
+          </clipPath>
+        </defs>
+        <image :href="noiseDataUrl" width="1000.740" height="176" clip-path="url(#droughts-clip)" />
+      </svg>
+
+      <!-- Sheep and Wheat Animation -->
+      <div class="png-animation-container">
+        <img v-for="(style, i) in wheatStyles" :key="i" :src="getWheatSrc()" class="png-frame wheat" :style="style"
+          alt="Wheat" />
+        <img :src="getSheepSrc()" class="png-frame sheep" :style="sheepStyle" alt="Sheep" />
+      </div>
+
+      <!-- SVG for Raindrops -->
+      <svg ref="floodsSvg" class="floods-svg">
+        <g ref="raindropGroup">
+          <!-- Raindrops will fall inside this rect, which will match the bounding box of the "FLOODS" heading -->
+          <rect ref="raindropRect" width="100%" height="100%" fill="#089c9d" />
+        </g>
+      </svg>
+
+      <!-- SVG for Sparks -->
+      <svg ref="firesSvg" class="fires-svg">
+        <defs>
+          <clipPath id="text-clip">
+            <!-- Dynamically placed text for clipping -->
+            <text ref="clipText" font-family="Parkinsans" font-weight="800" id="firesText" fill="black">
+              FIRES
+            </text>
+          </clipPath>
+        </defs>
+        <g clip-path="url(#text-clip)" ref="sparkGroup">
+          <rect width="100%" height="100%" fill="rgb(153, 0, 0)" />
+        </g>
+      </svg>
     </div>
-
-    <canvas ref="noiseCanvas" style="display:none;"></canvas>
-
-    <!-- Droughts mask applied via SVG -->
-    <svg ref="droughtsSvg" class="droughts-svg">
-      <defs>
-        <clipPath id="droughts-clip">
-          <text x="0" :y="droughtsHeight * 0.75" :font-size="droughtsHeight" font-family="Parkinsans" font-weight="800">
-            DROUGHTS
-          </text>
-        </clipPath>
-      </defs>
-      <image :href="noiseDataUrl" width="1000.740" height="176" clip-path="url(#droughts-clip)" />
-    </svg>
-    <!-- SVG for Raindrops -->
-    <svg ref="floodsSvg" class="floods-svg">
-      <g ref="raindropGroup">
-        <!-- Raindrops will fall inside this rect, which will match the bounding box of the "FLOODS" heading -->
-        <rect ref="raindropRect" width="100%" height="100%" fill="#089c9d" />
-      </g>
-    </svg>
-
-    <!-- SVG for Sparks -->
-    <svg ref="firesSvg" class="fires-svg">
-      <defs>
-        <clipPath id="text-clip">
-          <!-- Dynamically placed text for clipping -->
-          <text ref="clipText" font-family="Parkinsans" font-weight="800" id="firesText" fill="black">
-            FIRES
-          </text>
-        </clipPath>
-      </defs>
-      <g clip-path="url(#text-clip)" ref="sparkGroup">
-        <rect width="100%" height="100%" fill="rgb(153, 0, 0)" />
-      </g>
-    </svg>
+  </div>
+  <div class="morocco-location">
+    <l-map ref="map" v-model:zoom="zoom" :center="center" :zoom-control="false" class="morocco-map">
+      <l-geo-json ref="geoJsonLayer" v-if="geoJsonData" :geojson="geoJsonData" :options-style="geoJsonStyle" />
+    </l-map>
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, nextTick } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick, computed } from 'vue'
 import * as d3 from 'd3'
+import "leaflet/dist/leaflet.css";
+import { LMap, LGeoJson } from "@vue-leaflet/vue-leaflet";
 
 // Refs to DOM nodes
 const firesSvg = ref(null)
@@ -76,6 +92,113 @@ let droughtColorTimer = null
 
 // Droughts specific
 let droughtsHeight = 176 // Adjust based on DOM or specific requirements
+
+const zoom = ref(3);
+const geoJsonData = ref(null);
+const map = ref(null);
+const geoJsonLayer = ref(null);
+const center = ref([20, -5]);
+
+const highlightMorocco = () => {
+  const moroccoFeature = geoJsonLayer.value?.geojson.features.find(
+    (f) => f.properties.ADMIN === "Morocco"
+  );
+
+  if (!moroccoFeature) {
+    console.warn("Morocco not found in GeoJSON.");
+    return;
+  }
+
+  const layer = geoJsonLayer.value?.leafletObject.getLayers().find((l) =>
+    l.feature?.properties.ADMIN === "Morocco"
+  );
+
+  if (layer) {
+    layer.setStyle({
+      fillColor: "#d4bb9749",
+      color: "#e2d3b4",
+      weight: 2,
+      fillOpacity: 0.9,
+    });
+
+    const bounds = layer.getBounds();
+
+    const offset = [700, 0];
+
+    map.value?.leafletObject.fitBounds(bounds, {
+      maxZoom: 7, // Prevent zooming in too far
+      paddingTopLeft: offset, // Apply offset on top-left
+    });
+
+    center.value = bounds.getCenter();
+    zoom.value = map.value?.leafletObject.getZoom();
+  }
+};
+
+
+onMounted(() => {
+  loadGeoJsonMap();
+
+  // Zoom and highlight Morocco after 10 seconds
+  setTimeout(() => {
+    highlightMorocco();
+  }, 10000);
+});
+
+
+const loadGeoJsonMap = async () => {
+  try {
+    const geoJsonResponse = await fetch("./data/country-boundaries.geojson");
+    const geoJson = await geoJsonResponse.json();
+    geoJsonData.value = geoJson;
+    console.log('GeoJSON Data:', geoJsonData.value);  // Debug log
+  } catch (error) {
+    console.error("Error loading data:", error);
+  }
+};
+
+const geoJsonStyle = () => {
+  return {
+    fillColor: "#f5f0e168",
+    color: "#e2d3b4",
+    weight: 1,
+    fillOpacity: 0.7,
+  };
+};
+
+
+function getWheatSrc() {
+  return new URL('@/assets/wheat/wheat-title.svg', import.meta.url).href;
+}
+function getSheepSrc() {
+  return new URL('@/assets/sheep-intro.png', import.meta.url).href;
+}
+
+
+const animationTriggered = ref(false)
+onMounted(() => {
+  setTimeout(() => {
+    animationTriggered.value = true
+  }, 2000)
+})
+
+const wheatStyles = computed(() => {
+  return Array.from({ length: 10 }, (_, i) => {
+    const n = i + 1
+    return animationTriggered.value
+      ? {
+        animation: `wiltDown 1s ease-out forwards`,
+        animationDelay: `${10 - n}s`
+      }
+      : {}
+  })
+})
+
+const sheepStyle = computed(() => {
+  return animationTriggered.value
+    ? { animation: 'slideInSheep 1s ease-out 1s forwards' }
+    : {}
+})
 
 // On mounted logic
 onMounted(async () => {
@@ -132,7 +255,7 @@ function setDroughtsSvgPosition() {
 
   droughtsSvgNode.style.position = 'absolute'
   droughtsSvgNode.style.left = `${droughtsTextRect.left - 359}px`
-  droughtsSvgNode.style.top = `${droughtsTextRect.top - 215}px`
+  droughtsSvgNode.style.top = `${droughtsTextRect.top - 142}px`
   droughtsSvgNode.style.width = `${droughtsTextRect.width}px`
   droughtsSvgNode.style.height = `${droughtsHeight}px`
 
@@ -211,14 +334,14 @@ function drawBackgroundNoise() {
 function setupIntersectionObservers() {
   // Droughts Observer
   const droughtsObserver = new IntersectionObserver(([entry]) => {
-  if (droughtsSvg.value && droughtsText.value) {
-    droughtsSvg.value.style.display = entry.isIntersecting ? 'block' : 'none'
-  }
-}, { threshold: 0.1 })
+    if (droughtsSvg.value && droughtsText.value) {
+      droughtsSvg.value.style.display = entry.isIntersecting ? 'block' : 'none'
+    }
+  }, { threshold: 0.1 })
 
-if (droughtsText.value instanceof Element) {
-  droughtsObserver.observe(droughtsText.value)
-}
+  if (droughtsText.value instanceof Element) {
+    droughtsObserver.observe(droughtsText.value)
+  }
 
   // Fires Observer
   firesObserver = new IntersectionObserver(([entry]) => {
@@ -342,7 +465,6 @@ function renderRaindrops(svgEl, numDrops = 100) {
 }
 </script>
 
-
 <style scoped>
 html,
 body {
@@ -365,7 +487,24 @@ body {
   margin-bottom: 150px;
   position: relative;
   overflow: visible;
-  /* Makes sure SVG is positioned over the text */
+  z-index: 1;
+}
+
+.leaflet-container {
+  background-color: white;
+}
+
+.morocco-map {
+  height: calc(100vh - 12rem);
+  width: calc(100vw - 14rem);
+}
+
+.morocco-location {
+  position: absolute;
+  height: calc(100vh - 12rem);
+  width: calc(100vw - 14rem);
+  z-index: 0;
+  top: 4rem;
 }
 
 h1 {
@@ -430,5 +569,78 @@ h4 {
   width: 500px;
   height: 176px;
   position: relative;
+}
+
+.png-animation-container {
+  position: absolute;
+  top: 4.3rem;
+  left: -0.5rem;
+  width: 100%;
+  height: 5rem;
+  display: flex;
+  justify-content: left;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.png-frame {
+  width: 100px;
+  margin-right: -5px;
+  height: auto;
+  opacity: 1;
+  transform: scaleX(1);
+  transform-origin: right bottom;
+}
+
+.png-frame.wheat {
+  opacity: 0.9;
+  transform-origin: bottom center;
+  z-index: 0;
+}
+
+.wilt {
+  animation: wiltDown 1s ease-out forwards;
+}
+
+.png-frame.sheep {
+  padding-left: 25px;
+  width: 90px;
+  opacity: 0;
+  z-index: 1;
+}
+</style>
+
+<style>
+.leaflet-control-attribution {
+  opacity: 0.1;
+}
+
+@keyframes wiltDown {
+  0% {
+    opacity: 0.9;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+@keyframes slideInSheep {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
+.leaflet-control-zoom {
+  display: none;
 }
 </style>

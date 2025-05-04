@@ -741,7 +741,7 @@ h3 {
   text-transform: uppercase;
   position: absolute;
   bottom: 5rem;
-  right: 7rem;
+  right: 7.75rem;
   margin: 0 0 10px 0;
   z-index: 1000;
 }
@@ -895,11 +895,5 @@ input[type="radio"]:checked::before {
 
 .legend-color.no-data {
   margin-left: 20px;
-}
-</style>
-
-<style>
-.leaflet-control-zoom {
-  display: none;
 }
 </style>

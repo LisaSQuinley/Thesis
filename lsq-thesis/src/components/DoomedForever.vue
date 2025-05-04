@@ -458,5 +458,4 @@ h5 {
 .legend-label.right {
   text-align: left;
 }
-
 </style>

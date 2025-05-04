@@ -160,7 +160,7 @@ onUnmounted(() => {
   font-size: 5em;
   z-index: 999;
   text-transform: uppercase;
-  color: #ffffff46;
+  color: #ffffff96;
   line-height: 1;
   text-align: left;
   margin: 0;
@@ -195,7 +195,6 @@ onUnmounted(() => {
   padding: 0.6rem 1.2rem;
   font-size: 1rem;
   cursor: pointer;
-  border-radius: 8px;
   z-index: 1000;
   transition: background 0.3s;
 }
