@@ -113,7 +113,7 @@ export default {
 
     setTimeout(() => {
       this.animationTriggered = true
-    }, 3000)
+    }, 5000)
     window.addEventListener('keydown', this.handleKeyPress)
   },
   beforeUnmount() {

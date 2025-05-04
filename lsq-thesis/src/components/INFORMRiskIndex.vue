@@ -56,11 +56,16 @@
       </div>
 
       <div class="legend-container">
-  <div class="legend-item" v-for="(label, index) in legendLabels" :key="index">
-    <div class="legend-color" :style="{ backgroundColor: legendColors[index] }"></div>
-    <div class="legend-label">{{ label }}</div>
-  </div>
-</div>
+        <div class="legend-label">0</div>
+        <div class="legend-colors">
+          <div v-for="(color, index) in legendColors.slice(0, 5)" :key="index" class="legend-color"
+            :style="{ backgroundColor: color }"></div>
+        </div>
+        <div class="legend-label">10</div>
+
+        <div class="legend-color no-data" :style="{ backgroundColor: legendColors[5] }"></div>
+        <div class="legend-label">No Data</div>
+      </div>
 
       <!-- INFORM Risk Index Chart -->
       <div class="chart-container" v-if="isVisible" v-show="selectedCountries.length > 0">
@@ -87,14 +92,14 @@ const windowWidth = ref(window.innerWidth);
 const selectedCountries = ref([]);
 const ultimateBarHeight = 40;
 
-const legendLabels = [
+/* const legendLabels = [
   "0–2",
   "2–4",
   "4–6",
   "6–8",
   "8–10",
   "No Data"
-];
+]; */
 
 const legendColors = [
   "#7FFF00",
@@ -711,7 +716,7 @@ l-map {
 .chart-container {
   position: absolute;
   top: 5.5rem;
-  right: 6.5rem;
+  right: 7.25rem;
   width: calc(50% - 7.5rem);
   max-height: calc(100% - 12rem);
   z-index: 1000;
@@ -765,8 +770,8 @@ h4 {
 
 .filter-controls {
   position: absolute;
-  bottom: 8rem;
-  left: 6rem;
+  bottom: 9rem;
+  left: 7rem;
   z-index: 1000;
   padding: 10px;
   text-align: left;
@@ -779,7 +784,8 @@ h4 {
 }
 
 .radio-group:hover .descriptor {
-  max-height: 500px; /* adjust as needed */
+  max-height: 500px;
+  /* adjust as needed */
   opacity: 1;
 }
 
@@ -792,9 +798,10 @@ h4 {
   font-weight: 300;
 }
 
-.radio-group label:hover + .descriptor,
-.radio-group input:hover + .descriptor {
-  max-height: 500px; /* large enough for your longest descriptor */
+.radio-group label:hover+.descriptor,
+.radio-group input:hover+.descriptor {
+  max-height: 500px;
+  /* large enough for your longest descriptor */
   opacity: 1;
 }
 
@@ -856,29 +863,38 @@ input[type="radio"]:checked::before {
   background-color: #089d9d;
 }
 
+
+.legend-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #089c9d;
+}
+
 .legend-container {
   position: absolute;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  left: 7rem;
-  bottom: 6rem;
+  left: 8rem;
+  bottom: 7rem;
 }
 
-.legend-item {
+.legend-colors {
   display: flex;
-  align-items: center;
+  flex-direction: row;
   gap: 6px;
   font-size: 16px;
-  font-weight: 500;
-  color: #089c9d;
 }
 
 .legend-color {
   width: 20px;
   height: 20px;
   border: 2px solid #089c9d;
+}
+
+.legend-color.no-data {
+  margin-left: 20px;
 }
 </style>
 
