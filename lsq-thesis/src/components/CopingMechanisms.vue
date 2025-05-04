@@ -4,7 +4,7 @@
 
     <div class="video-viewer">
       <video ref="copingVideo" loop muted playsinline class="coping-video">
-        <source src="@/assets/coping-mechanisms/Coping-Mechanisms_Animation.mp4" type="video/mp4" />
+        <source src="@/assets/coping-mechanisms/Coping-Mechanisms_Animation_Final.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
