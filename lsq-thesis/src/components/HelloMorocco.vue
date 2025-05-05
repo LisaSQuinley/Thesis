@@ -142,7 +142,7 @@ onMounted(() => {
   // Zoom and highlight Morocco after 10 seconds
   setTimeout(() => {
     highlightMorocco();
-  }, 10000);
+  }, 35000);
 });
 
 
@@ -187,8 +187,8 @@ const wheatStyles = computed(() => {
     const n = i + 1
     return animationTriggered.value
       ? {
-        animation: `wiltDown 1s ease-out forwards`,
-        animationDelay: `${10 - n}s`
+        animation: `wiltDown 3s ease-out forwards`,
+        animationDelay: `${(10 - n) * 3}s`
       }
       : {}
   })
@@ -600,7 +600,7 @@ h4 {
 }
 
 .wilt {
-  animation: wiltDown 1s ease-out forwards;
+  animation: wiltDown 3s ease-out forwards;
 }
 
 .png-frame.sheep {
