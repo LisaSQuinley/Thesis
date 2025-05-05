@@ -369,20 +369,6 @@ body {
   color: white;
 }
 
-.event-summary-types {
-  position: absolute;
-  top: 32.5rem;
-  left: 3rem;
-  color: #2c3e50;
-  text-align: left;
-  font-size: 22px;
-  font-weight: 400;
-  max-height: 500px;
-  overflow-y: auto;
-  width: 500px;
-  z-index: 1000;
-}
-
 .title {
   position: absolute;
   text-align: right;
@@ -396,7 +382,24 @@ body {
   line-height: 1;
 }
 
+.event-summary-types {
+  position: absolute;
+  /* top: 32.5rem; */
+  bottom: 4rem;
+  left: 3rem;
+  color: #2c3e50;
+  text-align: left;
+  font-size: 22px;
+  font-weight: 400;
+  height: 450px;
+  overflow-y: auto;
+  width: 500px;
+  z-index: 1000;
+}
+
 .event-summary-types h4 {
+  position: sticky;
+  top: 0;
   font-size: 60px;
   margin: 0;
   font-weight: 300;
@@ -405,6 +408,7 @@ body {
 }
 
 h5 {
+  position: sticky;
   padding-top: 1rem;
   text-align: left;
   font-size: 28px;
@@ -415,12 +419,14 @@ h5 {
 }
 
 .event-summary-types ul {
+  position: sticky;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .event-summary-types li {
+  position: sticky;
   margin: 0.2rem 0;
 }
 
