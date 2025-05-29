@@ -139,3 +139,60 @@ Instead of relying on a scrollytelling library like Scrollama, I implemented scr
 ##### Zooming Into Risk
 To situate Morocco within the global context of climate risk, I used the INFORM Risk Index in combination with a geographic visualization built using Leaflet.js. As shown in Figure 8.1, the section titled Zooming Into Risk, users can click on any country to view its overall risk score along with the three contributing dimensions: vulnerability, hazard and exposure, and lack of coping capacity. Radio buttons enable users to toggle between the overall INFORM Risk Index and its individual components on a global scale. To ensure accessibility and clarity, hovering over each radio button reveals a brief, easy-to-understand description of the selected category or index. Additionally, users can select up to ten countries for a more detailed side-by-side comparison, as illustrated in Figure 8.2. Although the INFORM Risk Index classifies countries into qualitative risk levels—Very Low, Low, Medium, High, and Very High—I chose to visualize the data using a color scale divided into two-point intervals: green, yellow, orange, red, and purple. This palette is used consistently throughout the project and was intentionally chosen for its emotional impact—its bold, high-contrast tones are designed to evoke urgency and give the visualizations a strong, almost confrontational energy.
 
+
+![Zooming Into Risk Morocco](./Thesis-PNGs/Zooming-Into-Risk-Morocco.png)
+*Figure 8.1: Zooming Into Risk – Morocco View*
+
+*Source: Lisa Sakai Quinley, based on INFORM Risk data from the Joint Research Centre of the European Commission*
+
+![Zooming Into Risk Morocco](./Thesis-PNGs/Zooming-Into-Risk-Morocco-USA.png)
+*Figure 8.2: Zooming Into Risk – Morocco & United States Comparison*
+
+*Source: Lisa Sakai Quinley, based on INFORM Risk data from the Joint Research Centre of the European Commission*
+
+##### Raincheck Forever
+Raincheck Forever, the second visualization, combines historical data with the most severe scenario from the World Bank’s Climate Portal projections to highlight Morocco’s declining annual precipitation. Animated as falling raindrops that stack to form a bar chart, the visualization uses color to distinguish between historical and projected data. As shown in Figure 8.3, hovering over a year reveals a solid bar to help users identify the specific year and displays the actual precipitation in millimeters. A linear regression line was included to underscore the overall downward trend. This visualization was also designed with screen diversity in mind, recognizing that many young people primarily access content through their phones. One intentional design choice was to make the raindrops responsive to the height and width of the browser window, with each drop representing either 5mm or 10mm of rainfall depending on the screen size, ensuring clarity and engagement across devices. In future iterations, I aim to incorporate brief, written insights summarizing the key takeaways from the data—beyond relying solely on the trend line. I also plan to implement an automatic unit conversion feature that switches between millimeters and inches depending on the user's regional settings or preferences, to make the data more accessible to diverse audiences.
+
+![Raincheck Forever](./Thesis-PNGs/Raincheck-Forever-2010.png)
+*Figure 8.3: Raincheck Forever – Morocco’s Historical and Projected Annual Precipitation*
+
+*Source: Lisa Sakai Quinley, based on World Bank Climate Portal data*
+
+##### Future Heat
+Based on the World Bank’s Climate Portal data for Morocco, Future Heat—the third page—visualizes both historical records and four projected climate scenarios using heatmaps to display maximum and mean surface air temperatures by year and month. The visualization intentionally plays on the term “heatmap” both in form and content. As shown in Figure 8.4, users can hover over red overlays—which deepen in color based on scenario severity and include a playful sparks animation evocative of flames—to temporarily reveal the heatmaps beneath. This visual metaphor reinforces the thematic framing of climate scenarios through the lens of fire. For a more in-depth exploration, users can choose to remove the covers entirely. Radio buttons allow users to toggle between viewing maximum or mean temperature data. To clearly distinguish between past and future data, I used grayscale for historical records (suggestive of ash) and the vibrant palette (used in the previous visualizations) for projections, emphasizing the contrast. Each scenario is introduced with playful, fire-themed titles and short, accessible one-liners, along with longer summaries written in everyday language to make the content of the heatmaps more approachable. To accommodate a broader audience, the temperature legend automatically switches between Celsius and Fahrenheit.
+
+![Future Heat](./Thesis-PNGs/Future-Heat-3.png)
+*Figure 8.4: Future Heat – Morocco’s*
+
+*Source: Lisa Sakai Quinley, based on World Bank Climate Portal data*
+
+##### Pasture Panic
+The fourth visualization, Pasture Panic, illustrates the decline of sheep and cattle herds in two parts. When users enter the viewport, they see a green background with 100 animal icons—four variations each of sheep and cows—representing the total herd size in 2014. A bold “100%” appears in the background, and the scene is titled The Grazeful Era, a pun designed to engage younger audiences. The animation begins immediately: the 100% count starts ticking down, and with each decrease, a random animal disappears from the pasture as the background gradually shifts from green to brown as shown in Figure 8.5. By the end, viewers see 62 animals on a dry brown field, with “62%” displayed behind them. As show in Figure 8.6, the title and text also update to 2025: Desperately Seeking Grass, explaining that “according to official figures, Morocco’s cattle and sheep herds have decreased by 38% since the last census in 2014, due to consecutive droughts.” While exact numbers varied across sources, the consistent pattern of decline is clear.
+
+![Pasture Panic – 2014: The Grazeful Era](./Thesis-PNGs/Pasture-Panic-92.png)
+*Figure 8.5: Pasture Panic – 2014: The Grazeful Era*
+
+*Source: Lisa Sakai Quinley, based on a variety of data sources and news articles*
+
+![Pasture Panic – 2025: Desperately Seeking Grass](./Thesis-PNGs/Pasture-Panic-End.png)
+*Figure 8.6: Pasture Panic – 2025: Desperately Seeking Grass*
+
+*Source: Lisa Sakai Quinley, based on a variety of data sources and news articles*
+
+##### Wheat Drop
+Wheat Drop, the fifth page, introduces a set of three sequential, layered graphics—The Feast Before the Flame, Scorched Rhythm, and Echoes of a Vanished Spring—that narrate Morocco’s declining wheat production through visual storytelling. Rather than relying on conventional bar graphs, this section draws from data provided by the United States Department of Agriculture and transforms it into a more narrative-driven format. After analyzing yearly data from 2014 to 2025 (Table A.1), I chose to compare the average values from non-drought years (2014–2019) with those from drought-affected years (2019–2024). The stark contrast, especially when viewed against the sharp drop reflected in the most recent data from 2025, prompted the creation of a dedicated graphic to highlight that year (Table A.2).
+
+The first graphic, The Feast Before the Flame (Figure 8.7), depicts the average wheat yield and hectares of land seeded between 2014 and 2019—a period unaffected by major drought. Each wheat icon, created in Adobe Illustrator, represents 10,000 tons of wheat, with a total of 607 icons animating into the scene. These icons appear over a brown rectangle symbolizing land, which serves as the base for both text and imagery. In the upper right corner, a counter climbs from 0 to 607 to reflect the total wheat tonnage. The land area is also textually represented as 299 units, each equaling 10,000 hectares.
+
+After a brief three-second pause, the second graphic, Scorched Rhythm (Figure 8.8), animates into view. The brown rectangle here is noticeably shorter, reflecting a 12% drop in seeded land. A numerical animation counts down from 299 to 262, while only 420 wheat icons enter the frame—again accompanied by a counter falling from 607 to 420. This scene represents the average yield and land area during the drought-affected years of 2019 to 2024.
+
+The final graphic, Echoes of a Vanished Spring (Figure 8.9), builds on this downward trend by showing data from 2024–2025. The land area decreases by another 14%, shrinking from 262 to 220 units, while wheat yield falls from 420 to just 246 ten-thousand-ton icons—visually and numerically illustrating the deepening agricultural decline.
+
+Figure 8.7: Wheat Drop – The Feast Before the Flame
+Source: Lisa Sakai Quinley, based on United States Department of Agriculture data
+
+Figure 8.8: Wheat Drop – Scorched Rhythm
+Source: Lisa Sakai Quinley, based on United States Department of Agriculture data
+
+Figure 8.9: Wheat Drop – Echoes of A Vanished Spring
+Source: Lisa Sakai Quinley, based on United States Department of Agriculture data
